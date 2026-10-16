@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ARC mockups</title>
+<style>
+  :root {
+    --tint: #0a63c9; --tint-soft: #e5effb; --bg: #ffffff; --grouped: #f2f2f7; --label: #111;
+    --secondary: #6b6b70; --tertiary: #a1a1a6; --sep: #d9d9de; --yellow: rgba(255, 214, 10, .45);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "SF Pro Text", Inter, "Helvetica Neue", Arial, sans-serif; background: #e9edf2; color: var(--label); }
+  .phone { width: 390px; height: 844px; background: var(--bg); position: relative; overflow: hidden; display: none; flex-direction: column; }
+  .phone.show { display: flex; }
+  .status { height: 47px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 28px 6px 34px; font-weight: 600; font-size: 16px; }
+  .status .icons { letter-spacing: 2px; font-size: 13px; }
+  .nav { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: .5px solid var(--sep); }
+  .nav .back, .nav .action { color: var(--tint); font-size: 17px; min-width: 70px; }
+  .nav .action { text-align: right; font-size: 20px; }
+  .nav .title { font-weight: 600; font-size: 16px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
+  .banner { background: #f7f7f9; font-size: 12px; color: var(--secondary); text-align: center; padding: 5px 0 2px; }
+  .context { background: #f7f7f9; font-size: 12px; color: var(--tint); font-weight: 600; text-align: center; padding: 1px 0 6px; border-bottom: .5px solid var(--sep); }
+  .scroll { flex: 1; overflow: hidden; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .bubble { align-self: flex-end; max-width: 78%; background: var(--tint-soft); border-radius: 18px; padding: 10px 13px; font-size: 15.5px; line-height: 1.35; }
+  .answer { font-size: 15.5px; line-height: 1.42; }
+  .answer a { color: var(--tint); font-weight: 700; font-size: 12.5px; text-decoration: none; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { border-radius: 999px; background: #eef1f5; color: var(--tint); font-size: 12.5px; font-weight: 600; padding: 6px 11px; display: inline-flex; gap: 5px; align-items: center; white-space: nowrap; }
+  .chip.gov { background: var(--tint-soft); }
+  .sources-h { font-size: 14px; color: var(--tint); font-weight: 600; display: flex; justify-content: space-between; }
+  .source { border-radius: 10px; padding: 9px 10px; background: #f5f6f8; font-size: 13px; line-height: 1.35; }
+  .source.cited { background: #edf3fb; }
+  .source .row { display: flex; justify-content: space-between; font-weight: 700; font-size: 13.5px; }
+  .source .row span:last-child { color: var(--secondary); font-weight: 400; }
+  .badge { font-size: 10.5px; font-weight: 700; color: var(--tint); background: var(--tint-soft); border-radius: 999px; padding: 1px 7px; margin-right: 6px; }
+  .meta { color: var(--secondary); font-size: 12px; margin: 2px 0 3px; }
+  .excerpt { color: var(--secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .engine { font-size: 11px; color: var(--tertiary); }
+  .input { border-top: .5px solid var(--sep); padding: 10px 16px 30px; display: flex; gap: 10px; align-items: center; }
+  .input .field { flex: 1; background: #eff0f3; border-radius: 18px; padding: 10px 14px; color: var(--tertiary); font-size: 15.5px; }
+  .input .send { width: 34px; height: 34px; border-radius: 50%; background: var(--tint); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  /* Menu */
+  .dim { position: absolute; inset: 0; background: rgba(0,0,0,.18); }
+  .menu { position: absolute; right: 10px; top: 98px; width: 292px; background: rgba(250,250,252,.98); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden; font-size: 15.5px; }
+  .menu .group-h { font-size: 12.5px; color: var(--secondary); padding: 9px 16px 4px; background: #f0f0f4; }
+  .menu .item { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-top: .5px solid var(--sep); }
+  .menu .item .val { color: var(--secondary); font-size: 14px; }
+  .menu .check { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--tertiary); display: grid; place-items: center; font-size: 14px; font-weight: 800; color: #fff; }
+  .menu .check.on { background: var(--tint); border-color: var(--tint); }
+  .menu .sub { padding-left: 34px; position: relative; }
+  .menu .sub.sel::before { content: "✓"; position: absolute; left: 14px; color: var(--tint); font-weight: 700; }
+  /* PDF */
+  .pdf { flex: 1; background: #8e8e93; padding: 12px; overflow: hidden; }
+  .page { position: relative; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,.35); background: #fff; }
+  .page img { width: 100%; display: block; }
+  .sheet { padding: 26px 24px 30px; font-family: "Times New Roman", Georgia, serif; font-size: 10.5px; line-height: 1.45; color: #222; }
+  .sheet .runhead { display: flex; justify-content: space-between; font-size: 9px; color: #666; border-bottom: .5px solid #bbb; padding-bottom: 4px; margin-bottom: 12px; }
+  .sheet h3 { font-size: 11.5px; margin: 10px 0 4px; }
+  .sheet p { margin: 0 0 5px; }
+  .sheet .folio { text-align: center; font-size: 9px; color: #666; margin-top: 14px; }
+  .hl { position: absolute; background: var(--yellow); mix-blend-mode: multiply; border-radius: 2px; }
+  /* Library */
+  .grouped { flex: 1; background: var(--grouped); overflow: hidden; padding: 8px 16px; }
+  .search { background: #e3e3e8; border-radius: 10px; padding: 8px 12px; color: var(--secondary); font-size: 15.5px; margin: 2px 0 10px; }
+  .sec-h { font-size: 12.5px; color: var(--secondary); text-transform: uppercase; letter-spacing: .3px; padding: 12px 14px 6px; }
+  .card { background: #fff; border-radius: 11px; overflow: hidden; }
+  .cell { padding: 10px 14px; border-top: .5px solid var(--sep); display: flex; justify-content: space-between; align-items: center; }
+  .cell:first-child { border-top: none; }
+  .cell .t { font-size: 15.5px; }
+  .cell .s { font-size: 12px; color: var(--secondary); margin-top: 1px; }
+  .cell .chev { color: var(--tertiary); font-size: 18px; }
+  .big-title { font-size: 32px; font-weight: 700; padding: 4px 16px 6px; }
+</style>
+</head>
+<body>
+
+<!-- 1. Chat answer -->
+<div class="phone" id="chat">
+  <div class="status"><span>9:41</span><span class="icons">●●●● ▲ ▮</span></div>
+  <div class="nav"><span class="back">‹ Back</span><span class="title">Re-run after interference</span><span class="action">⚙︎</span></div>
+  <div class="banner">🔒 Qwen3 4B · on device</div>
+  <div class="context">🎓 OISRA · Referee · no FIS</div>
+  <div class="scroll">
+    <div class="bubble">A gate judge was standing in the racer's line. Can she get a re-run?</div>
+    <div class="answer">
+      Yes. An official standing in the course counts as interference <a href="#">[2]</a>.
+      The racer should stop at once, leave the course without passing more gates, and report it to the
+      Start or Finish Referee, who may allow a <b>provisional re-run</b> <a href="#">[1]</a>.
+      The Jury then decides whether the re-run counts; once confirmed, its time stands <a href="#">[3]</a>.
+    </div>
+    <div class="chips">
+      <span class="chip gov">✔︎ Re-Runs · p. 8</span>
+      <span class="chip gov">✔︎ Interference · p. 8</span>
+      <span class="chip gov">✔︎ Validity of a Re-Run · p. 8</span>
+    </div>
+    <div class="sources-h"><span>Sources (5)</span><span>⌄</span></div>
+    <div class="source cited">
+      <div class="row"><span>[1] Re-Runs</span><span>p. 8</span></div>
+      <div class="meta"><span class="badge">Governing</span>Sample Race Rules</div>
+      <div class="excerpt">4.1 A racer who is hindered during a run stops immediately and asks the nearest Start or Finish Referee for a provisional re-run…</div>
+    </div>
+    <div class="source cited">
+      <div class="row"><span>[2] Interference</span><span>p. 8</span></div>
+      <div class="meta"><span class="badge">Governing</span>Sample Race Rules</div>
+      <div class="excerpt">4.2 Interference includes anything in the racer's path that the racer could not avoid: an official, a spectator, equipment left on the course…</div>
+    </div>
+    <div class="engine">Qwen3 4B · on device</div>
+  </div>
+  <div class="input"><div class="field">Ask about a rule…</div><div class="send">↑</div></div>
+</div>
+
+<!-- 2. Race & role menu -->
+<div class="phone" id="menu">
+  <div class="status"><span>9:41</span><span class="icons">●●●● ▲ ▮</span></div>
+  <div class="nav"><span class="back">‹ Back</span><span class="title">New question</span><span class="action">⚙︎</span></div>
+  <div class="banner">🔒 Qwen3 4B · on device</div>
+  <div class="context">🎓 OISRA · Referee · no FIS</div>
+  <div class="scroll" style="color: var(--secondary); font-size: 15px;">Ask in plain language. Answers cite the document and page.</div>
+  <div class="dim"></div>
+  <div class="menu">
+    <div class="group-h">Race</div>
+    <div class="item sub">Any race</div>
+    <div class="item sub">U.S. Ski &amp; Snowboard (non-FIS)</div>
+    <div class="item sub">FIS race</div>
+    <div class="item sub sel">Oregon High School (OISRA)</div>
+    <div class="group-h">Your role</div>
+    <div class="item"><span>Referee</span><span class="val">Change ›</span></div>
+    <div class="group-h">Include rule sets</div>
+    <div class="item"><span>OISRA (Oregon high school)</span><span class="check on">✓</span></div>
+    <div class="item"><span>U.S. Ski &amp; Snowboard</span><span class="check on">✓</span></div>
+    <div class="item"><span>FIS</span><span class="check"></span></div>
+    <div class="item"><span>Medical &amp; other references</span><span class="check on">✓</span></div>
+  </div>
+</div>
+
+<!-- 3. PDF viewer with highlighted passage -->
+<div class="phone" id="pdf">
+  <div class="status"><span>9:41</span><span class="icons">●●●● ▲ ▮</span></div>
+  <div class="nav"><span class="back"></span><span class="title">Re-Runs · p. 8</span><span class="action" style="font-size:17px;font-weight:600">Done</span></div>
+  <div class="pdf">
+    <div class="page">
+      <!-- A fictional page: public screenshots never show real document pages. -->
+      <div class="sheet">
+        <div class="runhead"><span>Sample Race Rules</span><span>Section 4: Re-Runs</span></div>
+        <h3>3. Course Inspection</h3>
+        <p>3.1 Racers inspect the course only at the times the Jury announces, wearing their bibs.</p>
+        <p>3.2 Racers may side-slip or ski slowly beside the gates but may not train through them.</p>
+        <h3 id="hl-start">4. Re-Runs</h3>
+        <p>4.1 A racer who is hindered during a run stops immediately and asks the nearest Start or Finish
+          Referee for a provisional re-run. A racer who keeps racing through further gates, or crosses the
+          finish line, gives up the request.</p>
+        <p>4.2 Interference includes anything in the racer's path that the racer could not avoid: an official,
+          a spectator, equipment left on the course, or a missing gate.</p>
+        <p id="hl-end">4.3 A provisional re-run counts only when the Jury confirms it. Once confirmed, the re-run
+          time stands even if it is slower.</p>
+        <h3>5. Results</h3>
+        <p>5.1 Unofficial results are posted at the finish. Official results follow once the protest period
+          has closed.</p>
+        <p>5.2 Team scores add the best finishing times of each team's scoring racers.</p>
+        <div class="folio">8</div>
+      </div>
+      <div class="hl" id="hl"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Library -->
+<div class="phone" id="library">
+  <div class="status"><span>9:41</span><span class="icons">●●●● ▲ ▮</span></div>
+  <div class="nav"><span class="back">‹ ARC</span><span class="title"></span><span class="action"></span></div>
+  <div class="grouped">
+    <div class="big-title" style="padding-left:0">Library</div>
+    <div class="search">🔍 Search all documents</div>
+    <div class="sec-h">Oregon High School (OISRA)</div>
+    <div class="card">
+      <div class="cell"><div><div class="t">OISRA Alpine Race Rules</div><div class="s">April 2026 · 15 pages</div></div><span class="chev">›</span></div>
+    </div>
+    <div class="sec-h">Alpine Officials' Manual</div>
+    <div class="card">
+      <div class="cell"><div><div class="t">Ch. III: Rules, the Jury, and the TD</div><div class="s">2026 · 20 pages</div></div><span class="chev">›</span></div>
+      <div class="cell"><div><div class="t">Ch. VIII: Gate Judges</div><div class="s">2026 · 8 pages</div></div><span class="chev">›</span></div>
+      <div class="cell"><div><div class="t">Ch. IX: Timing and Calculations</div><div class="s">2026 · 28 pages</div></div><span class="chev">›</span></div>
+    </div>
+    <div class="sec-h">Officials' Study Guides</div>
+    <div class="card">
+      <div class="cell"><div><div class="t">Referee Study Guide</div><div class="s">2026 · 46 pages</div></div><span class="chev">›</span></div>
+      <div class="cell"><div><div class="t">Chief of Race Study Guide</div><div class="s">2026 · 63 pages</div></div><span class="chev">›</span></div>
+    </div>
+    <div class="sec-h">U.S. Ski &amp; Snowboard · FIS</div>
+    <div class="card">
+      <div class="cell"><div><div class="t">Alpine Competition Guide (incl. ACR)</div><div class="s">2026 · 158 pages</div></div><span class="chev">›</span></div>
+      <div class="cell"><div><div class="t">FIS ICR, Book IV: Alpine</div><div class="s">2026 · 135 pages</div></div><span class="chev">›</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const id = new URLSearchParams(location.search).get("screen") || "chat";
+  document.getElementById(id).classList.add("show");
+  // Highlight the Re-Runs passage on the fictional page.
+  const a = document.getElementById("hl-start"), b = document.getElementById("hl-end");
+  if (a && b && id === "pdf") {
+    const box = a.offsetParent, hl = document.getElementById("hl");
+    Object.assign(hl.style, { left: "18px", right: "18px", top: (a.offsetTop - 3) + "px",
+      height: (b.offsetTop + b.offsetHeight - a.offsetTop + 6) + "px" });
+  }
+</script>
+</body>
+</html>

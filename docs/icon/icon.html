@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>ARC icon</title>
+<style>
+  html, body { margin: 0; width: 1024px; height: 1024px; }
+  body { background: linear-gradient(160deg, #0b3d91 0%, #0a63c9 55%, #39a0ff 100%); }
+</style></head>
+<body>
+<!-- ARC app icon: a carved giant-slalom arc through a gate, on a mountain-blue field.
+     Rendered to 1024x1024 by docs/icon/render.js; iOS/macOS apply the rounded mask. -->
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- snow slope -->
+  <path d="M0 700 C 260 600, 640 560, 1024 470 L1024 1024 L0 1024 Z" fill="#ffffff" opacity="0.96"/>
+  <!-- carved arc (ski track) -->
+  <path d="M150 880 C 290 610, 560 480, 840 290" fill="none" stroke="#0b3d91" stroke-width="74" stroke-linecap="round"/>
+  <path d="M150 880 C 290 610, 560 480, 840 290" fill="none" stroke="#ffffff" stroke-width="40" stroke-linecap="round"/>
+  <!-- gate: two poles and a red panel -->
+  <line x1="610" y1="250" x2="610" y2="560" stroke="#d7263d" stroke-width="22" stroke-linecap="round"/>
+  <line x1="760" y1="200" x2="760" y2="500" stroke="#d7263d" stroke-width="22" stroke-linecap="round"/>
+  <path d="M610 270 L760 220 L760 360 L610 410 Z" fill="#d7263d"/>
+  <!-- wordmark -->
+  <text x="512" y="900" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif"
+        font-weight="800" font-size="210" letter-spacing="18" fill="#0b3d91">ARC</text>
+</svg>
+</body></html>

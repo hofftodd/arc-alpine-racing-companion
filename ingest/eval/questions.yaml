@@ -1,0 +1,88 @@
+# Retrieval evaluation set: questions officials ask, with the documents that
+# should answer them. A question is a hit when any `expect` document (slug from
+# catalog.yaml) appears in the top k results. Optional `context` (oisra | usss |
+# fis) and `role` (catalog role id) mirror the app's race-context and role pickers.
+# Add questions you hear on the hill; aim to keep hit@5 above 80%.
+questions:
+  # Jury and officials
+  - q: Who are the voting members of the jury?
+    expect: [aom-03-rules-jury-td, sg-referee, ppt-referee, aom-04-race-organization, usa-alpine-competition-guide]
+  - q: Who appoints the referee for a technical event?
+    role: referee
+    expect: [sg-referee, ppt-referee, aom-03-rules-jury-td, usa-alpine-competition-guide]
+  - q: What are the duties of the start referee?
+    role: start-finish-referee
+    expect: [sg-referee, ppt-referee, aom-03-rules-jury-td, usa-alpine-competition-guide]
+  - q: What makes an ideal technical delegate?
+    role: technical-delegate
+    expect: [fis-td-memorandum, aom-03-rules-jury-td]
+  - q: How does someone become a FIS technical delegate?
+    expect: [fis-td-memorandum, aom-03-rules-jury-td]
+  - q: What should the TD include in the TD technical report?
+    role: technical-delegate
+    expect: [ppt-preparing-tdtr, fis-td-memorandum]
+  # Gate judges and course
+  - q: What does a gate judge record on the gate judge card?
+    role: gate-judge
+    expect: [aom-08-gate-judges, sg-referee, sg-competition-official]
+  - q: What is a legal passage through a gate?
+    expect: [aom-08-gate-judges, oisra-alpine-race-rules, sg-referee, ppt-referee, usa-alpine-competition-guide]
+  - q: What supplies does a gate judge need?
+    expect: [aom-08-gate-judges]
+  - q: How should the finish area be laid out?
+    role: chief-of-course
+    expect: [aom-07-racecourse, sg-chief-of-course, ppt-chief-of-course]
+  - q: What is a racecourse homologation?
+    expect: [aom-07-racecourse, sg-chief-of-course, ppt-chief-of-course, aom-02-superstructure]
+  - q: Which gate panels are FIS homologated?
+    expect: [fis-homologated-gate-panels]
+  - q: What vertical drop is allowed for U14 giant slalom?
+    expect: [usa-course-setting-specs, sg-chief-of-course, ppt-chief-of-course, usa-alpine-competition-guide]
+  # Race day
+  - q: When can a competitor get a re-run?
+    expect: [sg-referee, ppt-referee, sg-timing-basic, aom-03-rules-jury-td, oisra-alpine-race-rules, usa-alpine-competition-guide]
+  - q: When can a competitor get a re-run in a high school race?
+    context: oisra
+    expect: [oisra-alpine-race-rules]
+  - q: How is the team score calculated?
+    context: oisra
+    expect: [oisra-alpine-race-rules]
+  - q: What is a false start?
+    expect: [sg-referee, ppt-referee, oisra-alpine-race-rules, usa-alpine-competition-guide]
+  - q: What happens at the team captains' meeting?
+    expect: [aom-04-race-organization, sg-race-admin-1, ppt-minutes-guide, sg-chief-of-race, usa-alpine-competition-guide]
+  - q: What is force majeure?
+    expect: [ppt-referee, ppt-chief-of-race, ppt-chief-of-course, aom-03-rules-jury-td, oisra-alpine-race-rules, sg-referee, sg-chief-of-race, sg-chief-of-course, usa-alpine-competition-guide]
+  - q: What radio protocol should the jury use?
+    expect: [ppt-radio-protocol, aom-03-rules-jury-td, sg-referee, sg-chief-of-race]
+  - q: Who can stop the start during a course hold?
+    expect: [aom-03-rules-jury-td, sg-referee, sg-chief-of-course, ppt-radio-protocol, usa-alpine-competition-guide]
+  # Timing and results
+  - q: How do I calculate a replacement time when the electronic timing fails?
+    role: timing
+    expect: [aom-09-timing-calculations, ppt-replacement-time, ppt-basic-timing, sg-timing-basic, fis-timing-booklet, usa-alpine-competition-guide]
+  - q: How is the race penalty calculated?
+    role: timing
+    expect: [aom-09-timing-calculations, ppt-race-points-penalty, sg-timing-basic, fis-alpine-points, usa-alpine-competition-guide]
+  - q: What is the minimum vertical drop for a race to be scored?
+    expect: [aom-09-timing-calculations, sg-timing-basic, ppt-basic-timing, usa-alpine-competition-guide]
+  - q: How must the start gate be wired for timing?
+    expect: [fis-timing-booklet, sg-timing-basic, sg-timing-advanced, usa-alpine-competition-guide]
+  - q: How are FIS points lists published?
+    expect: [fis-alpine-points]
+  - q: How is the draw and seeding done?
+    role: race-admin
+    expect: [aom-05-secretariat, sg-race-admin-1, ppt-race-administration, aom-12-computers, usa-alpine-competition-guide, sg-referee]
+  # Equipment, safety, medical
+  - q: What are the helmet rules?
+    expect: [fis-equipment-specs, usa-equipment-regulations, ppt-referee, ppt-chief-of-race, usa-alpine-competition-guide]
+  - q: What ski radius is required for giant slalom skis?
+    expect: [fis-equipment-specs, usa-equipment-regulations, usa-alpine-competition-guide]
+  - q: What should an official do if they suspect a concussion?
+    expect: [usa-concussion-policy, cdc-concussion-officials, concussion-recognition-tool-6, ppt-referee, usa-alpine-competition-guide]
+  - q: When is it too cold to race?
+    expect: [fis-competitions-and-cold, fis-sport-low-temperatures, fis-medical-guide]
+  - q: Who needs SafeSport training?
+    expect: [sg-referee, sg-chief-of-race, aom-11-officials-program, safesport-code, ppt-intro-ski-racing]
+  - q: How do I appeal a failing exam grade?
+    expect: [ao-exam-appeal, aom-11-officials-program]

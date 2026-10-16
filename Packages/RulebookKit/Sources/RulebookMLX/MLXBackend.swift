@@ -1,0 +1,46 @@
+import Foundation
+import MLXLMCommon
+import RulebookKit
+
+/// Qwen3-4B running on device through MLX. Its context window is much larger
+/// than Apple's model, so it gets more excerpts; the budget scales with device memory.
+public struct MLXBackend: LLMBackend {
+    public let displayName = "Qwen3 4B (on device)"
+    public let promptTokenBudget: Int
+    public let maxExcerpts: Int
+    private let container: ModelContainer
+
+    init(container: ModelContainer, physicalMemory: UInt64 = ProcessInfo.processInfo.physicalMemory) {
+        self.container = container
+        // The KV cache grows with the prompt, so phones get a smaller window than Macs.
+        let gigabytes = physicalMemory / 1_073_741_824
+        switch gigabytes {
+        case ..<9: (promptTokenBudget, maxExcerpts) = (7_000, 12)  // iPhone 15 Pro–17 (8 GB)
+        case ..<17: (promptTokenBudget, maxExcerpts) = (14_000, 16)  // iPad Pro / 16 GB Mac
+        default: (promptTokenBudget, maxExcerpts) = (28_000, 20)
+        }
+    }
+
+    public func stream(instructions: String, prompt: String) -> AsyncThrowingStream<String, Error> {
+        let container = container
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    // A fresh session per question: excerpts already carry the conversation context.
+                    let session = ChatSession(
+                        container,
+                        instructions: instructions,
+                        generateParameters: GenerateParameters(maxTokens: 900, temperature: 0.2, topP: 0.9))
+                    for try await chunk in session.streamResponse(to: prompt) {
+                        try Task.checkCancellation()
+                        continuation.yield(chunk)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+}

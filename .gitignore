@@ -1,0 +1,33 @@
+# Xcode (project is generated from project.yml)
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+.build/
+.swiftpm/
+Package.resolved
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Built by scripts/build_resources.sh from the reference documents.
+App/Resources/Documents/*.pdf
+App/Resources/rulebook.sqlite
+ingest/.build/
+
+# The reference documents and text copied from them never go in this public repository.
+# They live in the private library submodule (ingest/library/) or your own ingest/documents/.
+ingest/documents/
+ingest/supplements/
+ingest/eval/study_guide_questions.yaml
+*.pdf
+*.ppt
+*.pptx
+
+.DS_Store
+
+# Your Apple Developer team ID (see DISTRIBUTION.md)
+App/Config/Local.xcconfig

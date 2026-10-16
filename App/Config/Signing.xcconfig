@@ -1,0 +1,6 @@
+// Signing settings shared by all configurations.
+// Your Apple Developer team ID goes in Local.xcconfig (git-ignored), next to this file:
+//   cp App/Config/Local.xcconfig.example App/Config/Local.xcconfig
+// then set DEVELOPMENT_TEAM. Find the ID at developer.apple.com > Account > Membership details.
+DEVELOPMENT_TEAM =
+#include? "Local.xcconfig"

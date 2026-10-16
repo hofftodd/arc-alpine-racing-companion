@@ -1,0 +1,3 @@
+[submodule "ingest/library"]
+	path = ingest/library
+	url = https://github.com/hofftodd/arc-library.git

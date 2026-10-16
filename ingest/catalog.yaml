@@ -1,0 +1,181 @@
+# Identifies each reference document and says how to index it.
+#
+# build_index.py scans the documents folder (default: ingest/documents/) for
+# PDF / PPTX / PPT files and matches each file to an entry below: an entry
+# matches when one of its `match` keys appears in the filename (case, spaces
+# and punctuation are ignored; the longest matching key wins). Files that match
+# nothing are still indexed, using the `unmatched` settings and a title made
+# from the filename. The build prints a warning so you can add an entry here.
+#
+# Fields
+#   slug          stable id; also the PDF's name inside the app (slug.pdf)
+#   title         shown in citations and the Library
+#   collection    Library section
+#   jurisdiction  oisra | usss | fis | reference. The race context chosen in a
+#                 conversation gives its jurisdiction precedence (see RaceContext.swift)
+#   style         outline (default) | rules (3-digit numbered rules) | guide (numbered
+#                 rules plus ALL-CAPS narrative chapters, e.g. the Competition Guide) | slides
+#   roles         officials the document is written for; answers for that role rank it
+#                 higher. Ids: competition-official gate-judge chief-of-course chief-of-race
+#                 referee start-finish-referee technical-delegate timing race-admin coach
+#   priority      ranking weight when several documents match equally well
+#   page_label_pattern  regex with a `label` group, read from each page's first lines
+#   ignore_patterns     lines to drop (cover boilerplate)
+#   skip_pages    0-based page indexes to leave out
+#   rules_from_page  (style guide) 0-based page where the numbered rules begin
+#   supplement    Markdown transcription (in the private library, ingest/library/) of tables that PDF text
+#                 extraction scrambles; each "## " section becomes a passage citing the PDF
+
+defaults:
+  edition: "2026"
+  style: outline
+  priority: 1.0
+  jurisdiction: reference
+
+unmatched:
+  collection: Other References
+  priority: 0.8
+  edition: null
+
+groups:
+  - name: OISRA
+    defaults:
+      collection: Oregon High School (OISRA)
+      jurisdiction: oisra
+      priority: 1.0
+    documents:
+      - slug: oisra-alpine-race-rules
+        match: [OSIRA_ALPINE_RACE_RULES, OISRA_ALPINE_RACE_RULES, OISRA Alpine Race Rules]
+        title: OISRA Alpine Race Rules
+        edition: "April 2026"
+
+  - name: Alpine Officials' Manual
+    defaults:
+      collection: Alpine Officials' Manual
+      jurisdiction: usss
+      page_label_pattern: '^(?P<label>(?:[IVX]+|BIB)/\s*\d+|[ivx]+)\s*/\s*\d{4}$'
+      ignore_patterns:
+        - "^ALPINE OFFICIALS'? MANUAL$"
+        - '^SEASON 20\d\d$'
+        - '^CHAPTER [IVX]+$'
+    documents:
+      - {slug: aom-00-cover, match: [Manual_Cover_Contents], title: "Officials' Manual: Contents, Objectives & Code of Conduct", priority: 0.8}
+      - {slug: aom-01-introduction, match: [Intro__Overview, Intro_Overview, IntroOverview, "Intro & Overview"], title: "Officials' Manual Ch. I: Introduction and Overview", roles: [competition-official]}
+      - {slug: aom-02-superstructure, match: [Superstructure], title: "Officials' Manual Ch. II: The Superstructure of Ski Racing"}
+      - {slug: aom-03-rules-jury-td, match: [Rules_Jury, RulesJury, "Rules, Jury"], title: "Officials' Manual Ch. III: Rules, the Jury, and the Technical Delegate", roles: [referee, technical-delegate, chief-of-race]}
+      - {slug: aom-04-race-organization, match: [IV._Race_Organization, IVRaceOrganization], title: "Officials' Manual Ch. IV: Race Organization", roles: [referee, technical-delegate, chief-of-race]}
+      - {slug: aom-05-secretariat, match: [Secretariat], title: "Officials' Manual Ch. V: The Secretariat", roles: [race-admin]}
+      - {slug: aom-06-working-papers, match: [Working_Papers, WorkingPapers], title: "Officials' Manual Ch. VI: Working Papers", roles: [race-admin]}
+      - {slug: aom-07-racecourse, match: [The_Racecourse, TheRacecourse], title: "Officials' Manual Ch. VII: The Racecourse", roles: [technical-delegate, chief-of-course]}
+      - {slug: aom-08-gate-judges, match: [Gate_Judges, GateJudges], title: "Officials' Manual Ch. VIII: Gate Judges", roles: [referee, start-finish-referee, gate-judge, competition-official]}
+      - {slug: aom-09-timing-calculations, match: [IX._Timing, IXTiming], title: "Officials' Manual Ch. IX: Timing and Calculations", roles: [start-finish-referee, timing]}
+      - {slug: aom-10-coaches-as-officials, match: [Coaches_as_Officials, CoachesAsOfficials], title: "Officials' Manual Ch. X: Coaches as Officials", roles: [coach]}
+      - {slug: aom-11-officials-program, match: [Alpine_Officials_Program, AlpineOfficialsProgram], title: "Officials' Manual Ch. XI: Alpine Officials' Program"}
+      - {slug: aom-12-computers, match: [Computers__Ski_Racing, ComputersSkiRacing, Computers_Ski], title: "Officials' Manual Ch. XII: Computers and Ski Racing", roles: [race-admin]}
+      - {slug: aom-13-bibliography, match: [BIBLIOGRAPHY], title: "Officials' Manual: Bibliography", priority: 0.5}
+
+  - name: Study Guides
+    defaults:
+      collection: Officials' Study Guides
+      jurisdiction: usss
+      priority: 0.95
+      ignore_patterns:
+        - '^STUDY GUIDE'
+        - '^SEASON 20\d\d$'
+        - '^U\.S\. SKI & SNOWBOARD$'
+    documents:
+      - {slug: sg-competition-official, match: [CO_STUDY_GUIDE], title: "Competition Official (Intro to Ski Racing) Study Guide & Quiz", roles: [gate-judge, competition-official]}
+      - {slug: sg-chief-of-course, match: [CC_STUDY_GUIDE], title: "Chief of Course Study Guide", roles: [chief-of-course]}
+      - {slug: sg-chief-of-race, match: [CR_STUDY_GUIDE], title: "Chief of Race Study Guide", roles: [chief-of-race]}
+      - {slug: sg-referee, match: [RF_STUDY_GUIDE], title: "Referee Study Guide", roles: [referee, start-finish-referee, technical-delegate]}
+      - {slug: sg-race-admin-1, match: [RA_STUDY_GUIDE_Section_1, RA_STUDY_GUIDE], title: "Race Administration Study Guide, Section 1: Race Result Software", roles: [race-admin]}
+      - {slug: sg-timing-basic, match: [TC_1_STUDY_GUIDE, TC1_STUDY_GUIDE], title: "Basic Timing & Calculations (TC1) Study Guide", roles: [timing]}
+      - {slug: sg-timing-advanced, match: [TC_3_STUDY_GUIDE, TC3_STUDY_GUIDE], title: "Advanced Timing & Calculations (TC3) Study Guide", roles: [timing]}
+      - {slug: ao-exam-appeal, match: [Appeal_Failing_AO_Exam], title: "Appeal of an Official's Failing Examination Grade", edition: "2011", priority: 0.8}
+
+  - name: U.S. Ski & Snowboard
+    defaults:
+      collection: U.S. Ski & Snowboard
+      jurisdiction: usss
+    documents:
+      - slug: usa-alpine-competition-guide
+        match: [Alpine_Guide, Alpine Competition Guide, AlpineCompetitionGuide]
+        title: "Alpine Competition Guide (incl. ACR)"
+        # Chapters 1-6 are narrative with ALL-CAPS headings; chapter 7 is the ACR (numbered rules).
+        style: guide
+        rules_from_page: 79   # chapter 7, Alpine Competition Regulations
+        priority: 1.1
+        roles: [competition-official, gate-judge, chief-of-course, chief-of-race, referee, start-finish-referee, technical-delegate, timing, race-admin, coach]
+      - {slug: usa-course-setting-specs, match: [USA_Course_Setting_Specs], title: "U.S. Ski & Snowboard Course Setting Specifications", supplement: supplements/usa-course-setting-specs.md, roles: [technical-delegate, chief-of-course, coach]}
+      - {slug: usa-course-length, match: [USA_Course_Length_Recommendations], title: "U.S. Ski & Snowboard Course Length Recommendations", roles: [chief-of-course]}
+      - {slug: usa-equipment-regulations, match: [USA_Equipment_Regulations], title: "U.S. Ski & Snowboard Alpine Equipment Regulations", roles: [technical-delegate, coach]}
+      - {slug: usa-parallel-non-elimination, match: [Parallel_Non-Elimination, ParallelNonElimination], title: "Non-Elimination Parallel Format", edition: "2025"}
+      - {slug: usa-concussion-policy, match: [U.S._Concussion_Policy, USConcussionPolicy], title: "U.S. Ski & Snowboard Concussion Policy for Members", edition: null, roles: [coach]}
+      - {slug: safesport-code, match: [Safe_Sport_Code, SafeSportCode], title: "SafeSport Code for the U.S. Olympic and Paralympic Movement", edition: "July 2024", priority: 0.85}
+      - {slug: usa-social-media-policy, match: [Social_Media_Policy], title: "Key Volunteers' Social Media Policy", edition: "2018", priority: 0.7}
+
+  - name: FIS
+    defaults:
+      collection: FIS
+      jurisdiction: fis
+      edition: null
+    documents:
+      - slug: fis-icr
+        match: [icr-0, icr_0, icr-2, ICR_Book_IV, International_Ski_Competition_Rules, International Ski Competition Rules]
+        title: "FIS International Ski Competition Rules (ICR), Book IV: Alpine"
+        edition: "2026"
+        style: rules
+        priority: 1.1
+        roles: [competition-official, gate-judge, chief-of-course, chief-of-race, referee, start-finish-referee, technical-delegate, timing, race-admin, coach]
+      - {slug: fis-alpine-points, match: [FIS_Rules_for_the_Alpine_Points], title: "FIS Rules for the Alpine Points", edition: "Oct 2025", roles: [timing, race-admin]}
+      - {slug: fis-equipment-specs, match: [FIS_Equipment_Specs], title: "FIS Specifications for Alpine Competition Equipment", edition: "2025/26", roles: [technical-delegate, coach]}
+      - {slug: fis-timing-booklet, match: [Timing_Booklet, TimingBooklet], title: "FIS Alpine Skiing Timing Booklet", edition: "v2.63, Sept 2024", roles: [timing]}
+      - {slug: fis-timing-report-manual, match: [TimingReport_User_Manual, TimingReportUserManual], title: "FIS Timing and Data Technical Report Software: User Manual", edition: "Dec 2024", priority: 0.8, roles: [timing]}
+      - {slug: fis-td-memorandum, match: [FIS_TD_Memorandum, TD_Memorandum], title: "FIS Memorandum for the Technical Delegate", edition: "2020", roles: [referee, technical-delegate]}
+      - {slug: fis-uni-rules, match: [FIS_UNI_Rules, UNI_Rules], title: "Rules for FIS-UNI Competitions", edition: "2023", priority: 0.8}
+      - {slug: fis-homologated-flex-poles, match: [Homol._Flex_Poles, Flex_Poles], title: "FIS Homologated Flex Poles", edition: "Oct 2021", priority: 0.9, roles: [chief-of-course]}
+      - {slug: fis-homologated-gate-panels, match: [Homol._Gate_Panels, Gate_Panels], title: "FIS Homologated Gate Panels", edition: "Dec 2024", priority: 0.9, roles: [chief-of-course]}
+      - {slug: fis-safety-material, match: [Safety_Material], title: "FIS Safety Material Suppliers", edition: "Sept 2024", priority: 0.6, roles: [chief-of-course]}
+
+  - name: Medical & Safety
+    defaults:
+      collection: Medical & Safety
+      jurisdiction: reference
+      edition: null
+      priority: 0.85
+    documents:
+      - {slug: fis-medical-guide, match: [FIS_Medical_Guide], title: "FIS Medical Guide", edition: "2020", jurisdiction: fis}
+      - {slug: fis-competitions-and-cold, match: [Competitions_and_Cold], title: "FIS Medical Committee: Competitions & Cold", jurisdiction: fis}
+      - {slug: fis-sport-low-temperatures, match: [Sport_at_Low_Temperatures], title: "FIS Medical Committee: Sport at Low Temperatures", jurisdiction: fis}
+      - {slug: concussion-recognition-tool-6, match: [Concussion_Recognition_Tool], title: "Concussion Recognition Tool 6 (CRT6)", edition: "2023"}
+      - {slug: scat6, match: [SCAT6], title: "Sport Concussion Assessment Tool 6 (SCAT6)", edition: "2023"}
+      - {slug: cdc-concussion-officials, match: [Concussion_Fact_Sheet_for_Officials], title: "CDC HEADS UP: Concussion Fact Sheet for Officials"}
+      - {slug: cdc-concussion-coaches, match: [Concussion_Fact_Sheet_for_Coaches], title: "CDC HEADS UP: Concussion Fact Sheet for Coaches"}
+      - {slug: cdc-concussion-parents, match: [Concussion_Fact_Sheet_for_Parents], title: "CDC HEADS UP: Concussion Fact Sheet for Parents"}
+      - {slug: cdc-concussion-athletes, match: [Concussion_Fact_Sheet_Athletes], title: "CDC HEADS UP: Concussion Fact Sheet for Athletes"}
+      - {slug: cdc-concussion-young-athletes, match: [Concussion_Fact_Sheet_Young_Athletes], title: "CDC HEADS UP: Concussion Fact Sheet for Young Athletes"}
+      - {slug: cdc-concussion-wallet-card, match: [Concussion_Wallet_Card], title: "CDC HEADS UP: Coaches' Concussion Wallet Card", priority: 0.7}
+      - {slug: cdc-concussion-clipboard, match: [Heads_Up_Concussion_Clipboard], title: "CDC HEADS UP: Concussion Clipboard Sticker", priority: 0.7}
+
+  - name: Clinic Presentations
+    defaults:
+      collection: Clinic Presentations
+      jurisdiction: usss
+      style: slides
+      priority: 0.75
+    documents:
+      - {slug: ppt-intro-ski-racing, match: [INTRO_SKI_RACING_CO], title: "Clinic Slides: Introduction to Ski Racing (Competition Official)", roles: [gate-judge, competition-official]}
+      - {slug: ppt-chief-of-course, match: [CHIEF_OF_COURSE_2026], title: "Clinic Slides: Chief of Course", roles: [chief-of-course]}
+      - {slug: ppt-chief-of-race, match: [CHIEF_OF_RACE_2026], title: "Clinic Slides: Chief of Race", roles: [chief-of-race]}
+      - {slug: ppt-referee, match: [REFEREE_2026], title: "Clinic Slides: Referee", roles: [referee, start-finish-referee]}
+      - {slug: ppt-basic-timing, match: [BASIC_T__C, BASIC_T_C, BASICTC], title: "Clinic Slides: Basic Timing & Calculations", roles: [timing]}
+      - {slug: ppt-race-administration, match: [RACE_ADMINISTRATION_2026], title: "Clinic Slides: Race Administration", roles: [race-admin]}
+      - {slug: ppt-race-points-penalty, match: [RACE_POINTS__PENALTY, RACE_POINTS_PENALTY], title: "Clinic Slides: Race Points & Penalty", roles: [timing, race-admin]}
+      - {slug: ppt-replacement-time, match: [REPLACEMENT_TIME_EET], title: "Clinic Slides: Replacement Time (EET)", roles: [timing]}
+      - {slug: ppt-split-second-101, match: [SPLIT_SECOND_101], title: "Clinic Slides: Split Second 101", roles: [timing]}
+      - {slug: ppt-parallel, match: [PARALLEL_2026], title: "Clinic Slides: Parallel Events"}
+      - {slug: ppt-preparing-tdtr, match: [PREPARING_A_TDTR], title: "Clinic Slides: Preparing a TD Technical Report (TDTR)", roles: [technical-delegate]}
+      - {slug: ppt-radio-protocol, match: [RADIO_PROTOCOL], title: "Clinic Slides: Radio Protocol & Techniques", roles: [chief-of-race]}
+      - {slug: ppt-minutes-guide, match: [MINUTES_-A_Guide, MINUTES_A_Guide, MINUTESAGuide], title: "Clinic Slides: Minutes, a Guide", roles: [race-admin]}
+      - {slug: ppt-vola, match: [VOLA_2026], title: "Clinic Slides: Vola Timing Software", roles: [timing, race-admin]}
+      - {slug: ppt-update-review, match: [UPDATE__REVIEW, UPDATE_REVIEW], title: "Clinic Slides: Update & Review (Continuing Education)"}
