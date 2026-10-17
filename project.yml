@@ -1,5 +1,5 @@
 # Generate the Xcode project with: xcodegen generate
-name: AlpineCompanion
+name: AlpineRacingCompanion
 options:
   bundleIdPrefix: com.hoffmannet
   deploymentTarget:
@@ -19,7 +19,7 @@ packages:
   RulebookKit:
     path: Packages/RulebookKit
 targets:
-  AlpineCompanion:
+  AlpineRacingCompanion:
     type: application
     supportedDestinations: [iOS, macOS]
     sources:
@@ -54,7 +54,7 @@ targets:
           [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.hoffmannet.alpinecompanion
+        PRODUCT_BUNDLE_IDENTIFIER: com.hoffmannet.alpineracingcompanion
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_STYLE: Automatic
@@ -64,9 +64,9 @@ targets:
         # macOS: sandbox with outbound network for the one-time model download.
         "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": App/Config/macOS.entitlements
 schemes:
-  AlpineCompanion:
+  AlpineRacingCompanion:
     build:
       targets:
-        AlpineCompanion: all
+        AlpineRacingCompanion: all
     run:
       config: Debug

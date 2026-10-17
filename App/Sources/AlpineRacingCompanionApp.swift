@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 @main
-struct AlpineCompanionApp: App {
+struct AlpineRacingCompanionApp: App {
     @State private var model = AppModel()
     @Environment(\.scenePhase) private var scenePhase
 

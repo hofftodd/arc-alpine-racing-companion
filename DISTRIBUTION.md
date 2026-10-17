@@ -57,7 +57,7 @@ to their publishers.
 2. Tick **iOS** and **macOS** (one record covers iPhone, iPad and Mac).
 3. Name: something unique on the App Store, such as *ARC Alpine Racing Companion*. Testers
    see this name; the home-screen name stays **ARC**.
-4. Bundle ID: choose **com.hoffmannet.alpinecompanion**. If it isn't in the list yet, do step 3
+4. Bundle ID: choose **com.hoffmannet.alpineracingcompanion**. If it isn't in the list yet, do step 3
    first; Xcode registers it during the first archive. SKU: anything, e.g. `arc-001`.
 
 ## 3. Build and upload (each release)
@@ -68,12 +68,12 @@ git pull --recurse-submodules       # the code and the private document library
 scripts/build_resources.sh          # rebuild the rulebook library (~3 min)
 scripts/bump_build.sh               # new build number (required for every upload)
 xcodegen generate
-open AlpineCompanion.xcodeproj
+open AlpineRacingCompanion.xcodeproj
 ```
 
 In Xcode:
 
-1. Select the **AlpineCompanion** project → **Signing & Capabilities**. Check that **Team** shows
+1. Select the **AlpineRacingCompanion** project → **Signing & Capabilities**. Check that **Team** shows
    your name and *Automatically manage signing* is on. Xcode registers the app ID and the
    **Increased Memory Limit** capability, which Qwen 4B needs on iPhone and iPad.
 2. **iPhone and iPad:** set the run destination (top bar) to **Any iOS Device (arm64)**, then
@@ -130,7 +130,7 @@ one), repeat step 3, and add the new build to your groups. Testers get it automa
 
 | Message | Fix |
 |---|---|
-| *Signing for "AlpineCompanion" requires a development team* | Step 1.4: create `App/Config/Local.xcconfig` with your Team ID, then `xcodegen generate` again. |
+| *Signing for "AlpineRacingCompanion" requires a development team* | Step 1.4: create `App/Config/Local.xcconfig` with your Team ID, then `xcodegen generate` again. |
 | *The bundle version must be higher than the previously uploaded version* | Run `scripts/bump_build.sh`, then `xcodegen generate`, and archive again. |
 | *Missing app icon* or *Invalid image… alpha channel* | Don't edit the icon in Preview; regenerate it with `docs/icon/render.js` (see `docs/icon/`). |
 | *Provisioning profile doesn't include the com.apple.developer.kernel.increased-memory-limit entitlement* | In Signing & Capabilities click **+ Capability → Increased Memory Limit**, or enable it for the app ID at developer.apple.com → Identifiers. |

@@ -123,7 +123,7 @@ brew install ocrmypdf               # optional: makes scanned PDFs searchable
 
 scripts/build_resources.sh          # builds App/Resources/rulebook.sqlite (~3 min)
 xcodegen generate
-open AlpineCompanion.xcodeproj
+open AlpineRacingCompanion.xcodeproj
 ```
 
 Set your signing team, then run on **My Mac** or a **real** iPhone/iPad. Qwen3 4B uses MLX,

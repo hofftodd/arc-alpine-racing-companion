@@ -36,7 +36,9 @@ struct RaceContextMenu: View {
         } label: {
             Label("Race & role", systemImage: "slider.horizontal.3")
         }
-        .menuActionDismissBehavior(.disabled)  // keep the menu open while ticking several boxes
+        #if os(iOS)
+        .menuActionDismissBehavior(.disabled)  // keep the menu open while ticking several boxes (unavailable on macOS)
+        #endif
     }
 }
 
