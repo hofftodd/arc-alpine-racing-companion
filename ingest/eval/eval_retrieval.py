@@ -95,9 +95,20 @@ def graded(item: dict) -> bool:
     return item.get("standalone", True) and standalone(item["q"])
 
 
+# Mirror of QueryParser.rerunSpelling / synonyms: "re-run", "re run" and "reruns" are the term
+# "rerun", which also matches the phrase "re run" (the index splits "re-run" in two).
+RERUN_SPELLING = re.compile(r"\bre[\s-]*runs?\b")
+SYNONYMS = {"rerun": ["re run"]}
+
+
+def fts_term(term: str) -> str:
+    forms = [f'"{t}"' for t in [term] + SYNONYMS.get(term, [])]
+    return forms[0] if len(forms) == 1 else "(" + " OR ".join(forms) + ")"
+
+
 def terms(question: str) -> list[str]:
     out: list[str] = []
-    for raw in re.findall(r"[a-z0-9]+", question.lower()):
+    for raw in re.findall(r"[a-z0-9]+", RERUN_SPELLING.sub("rerun", question.lower())):
         # Keep the abbreviation itself too: documents use both "GS" and "Giant Slalom".
         for t in ([raw] + ABBREVIATIONS[raw].split()) if raw in ABBREVIATIONS else [raw]:
             if len(t) > 1 and t not in STOPWORDS and t not in out:
@@ -130,10 +141,10 @@ def search_hits(db: sqlite3.Connection, question: str, k: int, context: str | No
     if not words:
         return []
     broad = words + [t for t in ROLE_TERMS.get(role or "", []) if t not in words]
-    lists = [(_keyword(db, " OR ".join(f'"{t}"' for t in broad)), 1.0)]
+    lists = [(_keyword(db, " OR ".join(fts_term(t) for t in broad)), 1.0)]
     key_terms = [t for t in words if t not in GENERIC]
     if len(key_terms) > 1:
-        lists.append((_keyword(db, " AND ".join(f'"{t}"' for t in key_terms)), PRECISION_WEIGHT))
+        lists.append((_keyword(db, " AND ".join(fts_term(t) for t in key_terms)), PRECISION_WEIGHT))
     weights = CONTEXT_WEIGHTS[context]
     asked = disciplines(question)
     fused: dict[int, float] = {}
@@ -259,7 +270,7 @@ def study_guide_recall(db: sqlite3.Connection, path: Path, k: int, verbose: bool
             found = search_hits(db, item["q"], k, None, guide["role"])
             key_terms = [t for t in terms(item["q"]) if t not in GENERIC]
             covering = set(r[0] for r in db.execute(
-                "SELECT rowid FROM chunks_fts WHERE chunks_fts MATCH ?", (" AND ".join(f'"{t}"' for t in key_terms),)
+                "SELECT rowid FROM chunks_fts WHERE chunks_fts MATCH ?", (" AND ".join(fts_term(t) for t in key_terms),)
             )) if key_terms else set()
             ids = [r[0] for r in db.execute(
                 "SELECT c.id FROM chunks c JOIN documents d ON d.id = c.doc_id WHERE d.slug = ? ", (guide["slug"],))]

@@ -91,8 +91,17 @@ private struct MockBackend: LLMBackend {
     @Test func expandsAbbreviationsAndDropsStopwords() {
         #expect(QueryParser.ftsExpression(for: "Who is the TD?") == "\"td\" OR \"technical\" OR \"delegate\"")
         #expect(QueryParser.ftsExpression(for: "a \"quoted\" OR (weird) query*") == "\"quoted\" OR \"weird\" OR \"query\"")
-        #expect(QueryParser.ftsExpression(for: "OSIRA re-run", extraTerms: ["referee", "run"])
-            == "\"osira\" OR \"oisra\" OR \"re\" OR \"run\" OR \"referee\"")
+        #expect(QueryParser.ftsExpression(for: "OSIRA re-run", extraTerms: ["referee"])
+            == "\"osira\" OR \"oisra\" OR (\"rerun\" OR \"re run\") OR \"referee\"")
+    }
+
+    @Test func reRunAndRerunSearchBothSpellings() {
+        for spelling in ["re-run", "rerun", "Re-runs", "re run", "reruns"] {
+            #expect(QueryParser.terms(in: "Who grants a \(spelling)?") == ["grants", "rerun"])
+        }
+        #expect(QueryParser.ftsAllTermsExpression(for: "When is a re-run granted?")
+            == "(\"rerun\" OR \"re run\") AND \"granted\"")
+        #expect(QueryParser.terms(in: "forerunner rerouted") == ["forerunner", "rerouted"])
     }
 
     @Test func namesDisciplinesWithoutConfusingGiantSlalomForSlalom() {

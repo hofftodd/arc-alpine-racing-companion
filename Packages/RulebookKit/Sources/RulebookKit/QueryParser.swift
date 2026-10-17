@@ -40,14 +40,20 @@ public enum QueryParser {
     /// punctuation can't break FTS syntax. BM25 rewards chunks matching more terms.
     public static func ftsExpression(for text: String, extraTerms: [String] = []) -> String {
         (terms(in: text) + extraTerms.filter { !terms(in: text).contains($0) })
-            .map { "\"\($0)\"" }.joined(separator: " OR ")
+            .map(ftsTerm).joined(separator: " OR ")
     }
 
     /// FTS5 expression requiring every topical term, for the precision pass; nil when the
     /// question has fewer than two topical terms.
     public static func ftsAllTermsExpression(for text: String) -> String? {
         let key = terms(in: text).filter { !genericWords.contains($0) }
-        return key.count > 1 ? key.map { "\"\($0)\"" }.joined(separator: " AND ") : nil
+        return key.count > 1 ? key.map(ftsTerm).joined(separator: " AND ") : nil
+    }
+
+    /// A quoted term, or a group matching any of its spellings: `("rerun" OR "re run")`.
+    static func ftsTerm(_ term: String) -> String {
+        let forms = ([term] + (synonyms[term] ?? [])).map { "\"\($0)\"" }
+        return forms.count == 1 ? forms[0] : "(" + forms.joined(separator: " OR ") + ")"
     }
 
     /// First five letters of the question's topical terms: crude stemming ("referees" ~ "referee").
@@ -69,7 +75,10 @@ public enum QueryParser {
     static func terms(in text: String) -> [String] {
         var seen = Set<String>()
         var terms: [String] = []
-        for raw in text.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
+        let text = text.lowercased()
+        let normalized = rerunSpelling.stringByReplacingMatches(
+            in: text, range: NSRange(text.startIndex..., in: text), withTemplate: "rerun")
+        for raw in normalized.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
             let word = String(raw)
             // Keep the abbreviation itself too: documents use both "GS" and "Giant Slalom".
             let expanded = abbreviations[word].map { [word] + $0.split(separator: " ").map(String.init) } ?? [word]
@@ -80,6 +89,13 @@ public enum QueryParser {
         }
         return terms
     }
+
+    /// "re-run", "re run", "reruns": one term, "rerun". The documents use both spellings, and
+    /// the index splits "re-run" into "re" + "run", so `synonyms` searches it as that phrase too.
+    private static let rerunSpelling = try! NSRegularExpression(pattern: #"\bre[\s-]*runs?\b"#)
+
+    /// Spellings the documents use interchangeably; a term also matches each phrase listed.
+    static let synonyms: [String: [String]] = ["rerun": ["re run"]]
 
     /// Common race-office shorthand expanded so it matches the documents' wording.
     static let abbreviations: [String: String] = [
