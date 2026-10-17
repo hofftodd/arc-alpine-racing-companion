@@ -46,6 +46,9 @@ targets:
         # Only standard HTTPS (the one-time model download): exempt from export documentation.
         ITSAppUsesNonExemptEncryption: false
         LSApplicationCategoryType: public.app-category.reference
+        # Dictating questions in the ask box; recognition runs on the device only.
+        NSMicrophoneUsageDescription: ARC listens while you dictate a question. Audio stays on this device.
+        NSSpeechRecognitionUsageDescription: ARC turns your spoken question into text, on this device.
         UILaunchScreen: {}
         UISupportedInterfaceOrientations~ipad:
           [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown,
@@ -61,7 +64,7 @@ targets:
         # iOS: increased memory limit, needed to run Qwen3 4B on iPhone/iPad.
         "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": App/Config/iOS.entitlements
         "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": App/Config/iOS.entitlements
-        # macOS: sandbox with outbound network for the one-time model download.
+        # macOS: sandbox with outbound network for the one-time model download, and the microphone for dictation.
         "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": App/Config/macOS.entitlements
 schemes:
   AlpineRacingCompanion:

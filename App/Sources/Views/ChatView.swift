@@ -11,6 +11,7 @@ struct ChatView: View {
     @State private var streaming: ChatMessage?
     @State private var task: Task<Void, Never>?
     @State private var openCitation: Citation?
+    @State private var dictation = Dictation()
     @FocusState private var inputFocused: Bool
 
     private var isBusy: Bool { task != nil }
@@ -67,12 +68,20 @@ struct ChatView: View {
                 .frame(minWidth: 700, minHeight: 800)
             #endif
         }
-        .onDisappear { task?.cancel() }
+        .alert("Dictation unavailable", isPresented: Binding(get: { dictation.error != nil }, set: { if !$0 { dictation.error = nil } })) {
+            Button("OK") { dictation.error = nil }
+        } message: {
+            Text(dictation.error ?? "")
+        }
+        .onDisappear {
+            task?.cancel()
+            dictation.stop()
+        }
     }
 
     private var inputBar: some View {
         HStack(alignment: .bottom, spacing: 8) {
-            TextField("Ask about a rule…", text: $draft, axis: .vertical)
+            TextField(dictation.isListening ? "Listening…" : "Ask about a rule…", text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 .textFieldStyle(.plain)
                 .padding(10)
@@ -84,6 +93,13 @@ struct ChatView: View {
                 Button("Stop", systemImage: "stop.circle.fill") { task?.cancel() }
                     .labelStyle(.iconOnly).font(.title)
             } else {
+                if dictation.isAvailable {
+                    Button(dictation.isListening ? "Stop dictation" : "Dictate",
+                           systemImage: dictation.isListening ? "mic.circle.fill" : "mic.circle") { toggleDictation() }
+                        .labelStyle(.iconOnly).font(.title)
+                        .foregroundStyle(dictation.isListening ? AnyShapeStyle(.red) : AnyShapeStyle(.tint))
+                        .symbolEffect(.pulse, isActive: dictation.isListening)
+                }
                 Button("Send", systemImage: "arrow.up.circle.fill") { ask(draft) }
                     .labelStyle(.iconOnly).font(.title)
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -95,9 +111,24 @@ struct ChatView: View {
         .padding()
     }
 
+    /// Speech fills the ask box after whatever was already typed; the official reviews it and taps Send.
+    private func toggleDictation() {
+        if dictation.isListening {
+            dictation.stop()
+            return
+        }
+        let typed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        Task {
+            await dictation.start { spoken in
+                draft = typed.isEmpty ? spoken : typed + " " + spoken
+            }
+        }
+    }
+
     private func ask(_ text: String) {
         let question = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !question.isEmpty, !isBusy, let service = model.answerService else { return }
+        dictation.stop()
         draft = ""
         let history = conversation.history
         let answerContext = conversation.context
