@@ -35,6 +35,8 @@ public final class AnswerService: Sendable {
         FIS and OISRA rules, manuals and study guides. \
         After each statement, cite the excerpt it comes from with its number in square brackets, like [2]. \
         Quote the exact wording for numbers, times, distances and penalties. \
+        Keep each rule's conditions exactly as written: never add or drop words such as "only", "even", "not" or "unless". \
+        Numbered items in a rule are separate rules; do not join two of them into one statement or imply one causes the other. \
         When an excerpt cites rule numbers (for example [601.4.1] or ICR 614.2), include them so the official can look them up. \
         If the excerpts do not answer the question, say so plainly and name the sections that came closest; never guess or use outside knowledge. \
         Start with a direct one- or two-sentence answer, then give supporting detail. Keep it brief.

@@ -24,9 +24,16 @@ public final class HybridRetriever: Sendable {
     /// which matches every slalom passage, and the OISRA weight lifted OISRA's slalom data.
     private let otherDisciplinePenalty = 0.3
 
-    public init(store: RulebookStore, semantic: SemanticIndex?) {
+    /// Weight of the semantic list in the fusion (keyword search is 1). The on-device embeddings score
+    /// most passages alike, so at full weight they crowded out exact rule text (ACR 623.3.3 for "Is a re-run
+    /// valid if it's slower?"): measured with the real embedder over the eval set, 1.0 dropped everyday
+    /// questions to 33/38 and cited rules in the top 5 to 39/42; 0.25 keeps both at 100%.
+    let semanticWeight: Double
+
+    public init(store: RulebookStore, semantic: SemanticIndex?, semanticWeight: Double = 0.25) {
         self.store = store
         self.semantic = semantic
+        self.semanticWeight = semanticWeight
     }
 
     public func retrieve(_ question: String, limit: Int, context: AnswerContext = .default) async throws -> [SearchHit] {
@@ -62,7 +69,7 @@ public final class HybridRetriever: Sendable {
             let ranked = await semantic.search(question, limit: candidatesPerSource)
             let missing = ranked.map(\.chunkID).filter { chunksByID[$0] == nil }
             for chunk in try store.chunks(ids: missing) { chunksByID[chunk.id] = chunk }
-            add(ranked.compactMap { chunksByID[$0.chunkID] }, weight: 1)
+            add(ranked.compactMap { chunksByID[$0.chunkID] }, weight: semanticWeight)
         }
 
         let words = QueryParser.terms(in: question)

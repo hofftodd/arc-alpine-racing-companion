@@ -75,6 +75,8 @@ public enum RaceContext: String, CaseIterable, Identifiable, Sendable, Codable {
                 rules supersede U.S. Ski & Snowboard and FIS rules. If an OISRA excerpt addresses the \
                 question, answer from it and say that it is the OISRA rule. If an OISRA excerpt conflicts \
                 with a U.S. Ski & Snowboard or FIS excerpt, follow OISRA and briefly note the difference. \
+                If they state the same rule in different words, they agree: do not call it a difference, and \
+                use the clearer wording to explain the rule. \
                 If no OISRA excerpt addresses the question, say so, then answer from the other excerpts.
                 """
         }
