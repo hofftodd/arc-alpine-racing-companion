@@ -101,6 +101,9 @@ questions:
   - q: What is the maximum vertical drop for U16 super giant slalom?
     heading: Super G (SG) course setting specifications
     expect: [usa-course-setting-specs, usa-alpine-competition-guide]
+  - q: How far apart should the two courses be in a parallel event?
+    expect: [usa-alpine-competition-guide]
+    heading: Parallel
   # Forms (Master Packet of Forms)
   - q: Is there a form for a jury appeal?
     expect: [mpf-jury-appeal-form]

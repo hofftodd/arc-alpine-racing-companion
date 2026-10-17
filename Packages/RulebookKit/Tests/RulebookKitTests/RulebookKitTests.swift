@@ -113,6 +113,11 @@ private struct MockBackend: LLMBackend {
         #expect(QueryParser.terms(in: "super giant") == ["super", "giant"])
     }
 
+    @Test func farApartSearchesForDistance() {
+        #expect(QueryParser.terms(in: "How far apart should the two courses be?") == ["distance", "two", "courses"])
+        #expect(QueryParser.terms(in: "how far is the start from the finish") == ["distance", "start", "finish"])
+    }
+
     @Test func namesDisciplinesWithoutConfusingGiantSlalomForSlalom() {
         #expect(QueryParser.disciplines(in: "How far apart should GS gates be?") == [.giantSlalom])
         #expect(QueryParser.disciplines(in: "Giant Slalom — Technical Data") == [.giantSlalom])

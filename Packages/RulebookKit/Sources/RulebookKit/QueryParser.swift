@@ -94,10 +94,12 @@ public enum QueryParser {
 
     /// Spellings that become one term, which `synonyms` then searches in all its forms:
     /// "re-run", "re run", "reruns" -> "rerun" (the index splits "re-run" into "re" + "run");
-    /// "Super-G", "super G", "super giant slalom" -> "sg" (a lone "G" is too short to be a term).
+    /// "Super-G", "super G", "super giant slalom" -> "sg" (a lone "G" is too short to be a term);
+    /// "how far apart", "how far" -> "distance", the documents' word ("Distance between the Two Courses").
     private static let spellings: [(NSRegularExpression, String)] = [
         (#"\bre[\s-]*runs?\b"#, "rerun"),
         (#"\bsuper[\s-]giant[\s-]slalom\b|\bsuper[\s-]?g\b"#, "sg"),
+        (#"\b(?:how )?far apart\b|\bhow far\b"#, "distance"),
     ].map { (try! NSRegularExpression(pattern: $0), $1) }
 
     /// Spellings the documents use interchangeably; a term also matches each phrase listed.

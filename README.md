@@ -167,7 +167,7 @@ guides):
   Currently 42/42 for both.
 - **Everyday officials' questions** (`ingest/eval/questions.yaml`): every one must find an
   expected document in the top 5 (for table questions, the transcribed table itself).
-  Currently 43/43.
+  Currently 44/44.
 
 ### Capturing real screenshots
 

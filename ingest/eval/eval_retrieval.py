@@ -97,9 +97,11 @@ def graded(item: dict) -> bool:
 
 # Mirror of QueryParser.spellings / synonyms: "re-run", "re run" and "reruns" are the term "rerun",
 # which also matches the phrase "re run" (the index splits "re-run" in two); "Super-G", "super G"
-# and "super giant slalom" are "sg", which also matches "super g" and "super giant slalom".
+# and "super giant slalom" are "sg", which also matches "super g" and "super giant slalom"; "how far
+# apart" and "how far" are "distance", the documents' word.
 SPELLINGS = [(re.compile(r"\bre[\s-]*runs?\b"), "rerun"),
-             (re.compile(r"\bsuper[\s-]giant[\s-]slalom\b|\bsuper[\s-]?g\b"), "sg")]
+             (re.compile(r"\bsuper[\s-]giant[\s-]slalom\b|\bsuper[\s-]?g\b"), "sg"),
+             (re.compile(r"\b(?:how )?far apart\b|\bhow far\b"), "distance")]
 SYNONYMS = {"rerun": ["re run"], "sg": ["super g", "super giant slalom"]}
 
 
