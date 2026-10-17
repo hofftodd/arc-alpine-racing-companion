@@ -12,12 +12,14 @@ public struct MLXBackend: LLMBackend {
 
     init(container: ModelContainer, physicalMemory: UInt64 = ProcessInfo.processInfo.physicalMemory) {
         self.container = container
-        // The KV cache grows with the prompt, so phones get a smaller window than Macs.
+        // The KV cache grows with the prompt, so phones get a smaller window than Macs. Reading the
+        // excerpts is most of the wait: with 20 on an M4 Mac an answer took about 30 s, and the last
+        // excerpts were filler (concussion fact sheets in a re-run answer), so even Macs stop at 12.
         let gigabytes = physicalMemory / 1_073_741_824
         switch gigabytes {
-        case ..<9: (promptTokenBudget, maxExcerpts) = (7_000, 12)  // iPhone 15 Pro–17 (8 GB)
-        case ..<17: (promptTokenBudget, maxExcerpts) = (14_000, 16)  // iPad Pro / 16 GB Mac
-        default: (promptTokenBudget, maxExcerpts) = (28_000, 20)
+        case ..<9: (promptTokenBudget, maxExcerpts) = (5_000, 8)  // iPhone 15 Pro, 16 Pro (8 GB)
+        case ..<17: (promptTokenBudget, maxExcerpts) = (8_000, 10)  // iPhone 17 Pro (12 GB), iPad Pro, 16 GB Mac
+        default: (promptTokenBudget, maxExcerpts) = (10_000, 12)
         }
     }
 

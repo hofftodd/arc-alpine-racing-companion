@@ -11,7 +11,7 @@ The app has three main parts, and each one does a single job:
 | Part | Think of it as… | What it does |
 |---|---|---|
 | **The library** (database) | A very fast index at the back of a book | Holds every page of the 139 reference documents and forms, already split into short passages, and finds the passages that match a question in milliseconds. |
-| **The search** (RAG) | A well-organised assistant who pulls the right pages off the shelf | Decides *which* 5–20 passages are worth reading for this question, taking the race type and your role into account. |
+| **The search** (RAG) | A well-organised assistant who pulls the right pages off the shelf | Decides *which* 5–12 passages are worth reading for this question, taking the race type and your role into account. |
 | **The language model** (LLM) | A careful colleague who reads those pages and summarises them | Reads only the passages it was handed and writes a short answer, citing each statement. |
 
 ```mermaid
