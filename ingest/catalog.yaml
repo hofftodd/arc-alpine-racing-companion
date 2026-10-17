@@ -1,11 +1,13 @@
 # Identifies each reference document and says how to index it.
 #
 # build_index.py scans the documents folder (default: ingest/documents/) for
-# PDF / PPTX / PPT files and matches each file to an entry below: an entry
+# PDF, PPTX / PPT and Word / Excel files (converted with LibreOffice) and matches each file to an entry below: an entry
 # matches when one of its `match` keys appears in the filename (case, spaces
 # and punctuation are ignored; the longest matching key wins). Files that match
 # nothing are still indexed, using the `unmatched` settings and a title made
 # from the filename. The build prints a warning so you can add an entry here.
+# Files in a subfolder listed under `folders:` that match no entry take that folder's settings
+# instead, with the title from the file name minus a leading packet number ("36 Protest Form").
 #
 # Fields
 #   slug          stable id; also the PDF's name inside the app (slug.pdf)
@@ -28,6 +30,8 @@
 #   see_also      section heading -> ACR rules the section restates without citing them; each of its
 #                 passages gets a labeled "(ARC cross-reference: …, see ACR 623.3.3.)" note, so the
 #                 rule text is retrieved alongside (check the headings with each new edition)
+#   title_in_index  also search each passage under the document title (for blank forms, whose
+#                 text rarely names the form)
 #   supplement_page  1-based PDF page all supplement passages cite, to reuse another document's
 #                 supplement where this document reprints the table (check it with each new edition)
 
@@ -41,6 +45,18 @@ unmatched:
   collection: Other References
   priority: 0.8
   edition: null
+
+folders:
+  # U.S. Ski & Snowboard Alpine Master Packet of Forms (MPF), one file per form. Left out: the
+  # cover, the spreadsheet table of contents, the list of named head-tax-exempt athletes, and
+  # 14 (Certification Matrix): the newer AO Certification Guidelines file is the same text.
+  # "55 Additional FIS Documents" is a PDF portfolio; its three attachments are separate files.
+  forms:
+    slug_prefix: mpf-
+    collection: Race Forms (Master Packet of Forms)
+    jurisdiction: usss
+    priority: 0.85
+    title_in_index: true
 
 groups:
   - name: OISRA
@@ -99,6 +115,7 @@ groups:
       - {slug: sg-chief-of-race, match: [CR_STUDY_GUIDE], title: "Chief of Race Study Guide", roles: [chief-of-race]}
       - {slug: sg-referee, match: [RF_STUDY_GUIDE], title: "Referee Study Guide", roles: [referee, start-finish-referee, technical-delegate]}
       - {slug: sg-race-admin-1, match: [RA_STUDY_GUIDE_Section_1, RA_STUDY_GUIDE], title: "Race Administration Study Guide, Section 1: Race Result Software", roles: [race-admin]}
+      - {slug: sg-race-admin-2, match: [RA_STUDY_GUIDE_Section_2], title: "Race Administration Study Guide, Section 2: Event Administration", roles: [race-admin]}
       - {slug: sg-timing-basic, match: [TC_1_STUDY_GUIDE, TC1_STUDY_GUIDE], title: "Basic Timing & Calculations (TC1) Study Guide", roles: [timing]}
       - {slug: sg-timing-advanced, match: [TC_3_STUDY_GUIDE, TC3_STUDY_GUIDE], title: "Advanced Timing & Calculations (TC3) Study Guide", roles: [timing]}
       - {slug: ao-exam-appeal, match: [Appeal_Failing_AO_Exam], title: "Appeal of an Official's Failing Examination Grade", edition: "2011", priority: 0.8}
@@ -113,13 +130,14 @@ groups:
         title: "Alpine Competition Guide (incl. ACR)"
         # Chapters 1-6 are narrative with ALL-CAPS headings; chapter 7 is the ACR (numbered rules).
         style: guide
+        edition: "2027"
         rules_from_page: 79   # chapter 7, Alpine Competition Regulations
-        # The 2026 Course Setting Specifications chart, reprinted on PDF page 147.
-        supplement: supplements/usa-course-setting-specs.md
-        supplement_page: 147
+        # The 2027 Course Setting Specifications chart (PDF pages 148-149), transcribed.
+        supplement: supplements/usa-alpine-guide-2027-course-setting.md
         priority: 1.1
         roles: [competition-official, gate-judge, chief-of-course, chief-of-race, referee, start-finish-referee, technical-delegate, timing, race-admin, coach]
       - {slug: usa-course-setting-specs, match: [USA_Course_Setting_Specs], title: "U.S. Ski & Snowboard Course Setting Specifications", supplement: supplements/usa-course-setting-specs.md, roles: [technical-delegate, chief-of-course, coach]}
+      - {slug: usa-ao-certification-guidelines, match: [AO_Certification_Guidelines], title: "Alpine Officials Certification Guidelines (Certification Matrix)", edition: "2025-26"}
       - {slug: usa-course-length, match: [USA_Course_Length_Recommendations], title: "U.S. Ski & Snowboard Course Length Recommendations", roles: [chief-of-course]}
       - {slug: usa-equipment-regulations, match: [USA_Equipment_Regulations], title: "U.S. Ski & Snowboard Alpine Equipment Regulations", roles: [technical-delegate, coach]}
       - {slug: usa-parallel-non-elimination, match: [Parallel_Non-Elimination, ParallelNonElimination], title: "Non-Elimination Parallel Format", edition: "2025"}
@@ -169,6 +187,38 @@ groups:
       - {slug: cdc-concussion-young-athletes, match: [Concussion_Fact_Sheet_Young_Athletes], title: "CDC HEADS UP: Concussion Fact Sheet for Young Athletes"}
       - {slug: cdc-concussion-wallet-card, match: [Concussion_Wallet_Card], title: "CDC HEADS UP: Coaches' Concussion Wallet Card", priority: 0.7}
       - {slug: cdc-concussion-clipboard, match: [Heads_Up_Concussion_Clipboard], title: "CDC HEADS UP: Concussion Clipboard Sticker", priority: 0.7}
+
+  - name: Race Forms
+    # Master Packet forms that need more than the `forms` folder defaults: FIS-only forms (so
+    # unchecking FIS hides them) and files whose names make poor titles. Keys include the packet
+    # number, because "FIS Event Document Packets" is also part of "Non-FIS Event Document Packets".
+    defaults:
+      collection: Race Forms (Master Packet of Forms)
+      jurisdiction: fis
+      priority: 0.85
+      title_in_index: true
+    documents:
+      - {slug: mpf-fis-event-document-packets, match: [06 FIS Event Document Packets], title: "FIS Event Document Packets"}
+      - {slug: mpf-common-errors-fis-documentation, match: [07 Common Errors in FIS Race Documentation], title: "Common Errors in FIS Race Documentation"}
+      - {slug: mpf-distribution-of-documents-fis, match: [08 Distribution of Documents - FIS Events], title: "Distribution of Documents: FIS Events"}
+      - {slug: mpf-fis-entry-form, match: [13 FIS Entry Form], title: "FIS Entry Form"}
+      - {slug: mpf-fis-athlete-declaration, match: [17 FIS Athlete Declaration], title: "FIS Athlete Declaration"}
+      - {slug: mpf-checklist-for-tc-meeting, match: [24 Checklist for TC Meeting], title: "Checklist for the Team Captains' Meeting (FIS)"}
+      - {slug: mpf-program-tc-minutes-fis, match: [27 Program & TC Minutes - FIS], title: "Program & Team Captains' Meeting Minutes: FIS"}
+      - {slug: mpf-program-tc-minutes-fis-parallel, match: [28 Program & TC Minutes - FIS Parallel], title: "Program & Team Captains' Meeting Minutes: FIS Parallel"}
+      - {slug: mpf-fis-penalty-calculation, match: [40 FIS Penalty Calculation], title: "FIS Penalty Calculation"}
+      - {slug: mpf-fis-additional-td-report, match: [46 FIS Additional Rpt TD], title: "FIS Additional Report of the TD"}
+      - {slug: mpf-usa-fis-td-expense-report, match: [48 USA FIS TD Expense Report], title: "U.S. FIS TD Expense Report"}
+      - {slug: mpf-fis-special-circumstances, match: [55 Additional FIS Documents - Special Circumstances], title: "Additional FIS Documents: Special Circumstances"}
+      - {slug: mpf-fis-injury-report-form, match: [55a FIS Injury Report Form], title: "FIS Injury Report Form"}
+      - {slug: mpf-fis-td-report, match: [55b FIS TD Report], title: "FIS TD Report"}
+      - {slug: mpf-fis-td-expense-report-canada, match: [FIS-TD-XP-Form-CAN-races], title: "FIS TD Expense Report (Canadian Races)"}
+      - {slug: mpf-us-td-report, match: [41 U.S TD Report Fill In], title: "U.S. Technical Delegate Report", jurisdiction: usss}
+      - {slug: mpf-us-additional-td-report, match: [45 U.S. Additional Rpt TD], title: "U.S. Additional Report of the TD", jurisdiction: usss}
+      - {slug: mpf-non-fis-team-entry-form, match: [12 Non-FIS. Team Entry Form], title: "Non-FIS Team Entry Form", jurisdiction: usss}
+      - {slug: mpf-equipment-control-protest-guidelines, match: [16 Guidelines Equipment Control  Protest], title: "Guidelines for Equipment Control and Equipment Protests", jurisdiction: usss}
+      - {slug: mpf-eet-worksheet, match: [33 Replacement Time (EET) Worksheet], title: "Replacement Time (EET) Worksheet", jurisdiction: usss}
+      - {slug: mpf-eet-worksheet-example, match: [34 Replacement Time (EET) Worksheet & Example], title: "Replacement Time (EET) Worksheet & Example", jurisdiction: usss}
 
   - name: Clinic Presentations
     defaults:

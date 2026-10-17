@@ -14,7 +14,7 @@ files=$(git ls-files --cached)
 # Reference documents. Only the synthetic test fixture (built by make_fixture.py) is allowed.
 while IFS= read -r f; do
   [ -n "$f" ] && fail "document file tracked: $f"
-done < <(printf '%s\n' "$files" | grep -iE '\.(pdf|ppt|pptx|doc|docx|key)$' || true)
+done < <(printf '%s\n' "$files" | grep -iE '\.(pdf|ppt|pptx|doc|docx|xls|xlsx|key)$' || true)
 
 # Text copied from the documents.
 while IFS= read -r f; do

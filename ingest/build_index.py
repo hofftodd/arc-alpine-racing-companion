@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Build the bundled rulebook index from the reference documents.
 
-Finds every PDF / PPTX / PPT in the documents folder, identifies each one with
-``catalog.yaml`` (title, collection, jurisdiction, parsing style), converts
-slide decks to PDF, splits the text into heading-aware chunks, and writes a
+Finds every PDF, slide deck (PPTX / PPT) and Word or Excel file in the documents folder,
+identifies each one with ``catalog.yaml`` (title, collection, jurisdiction, parsing style),
+converts the Office files to PDF with LibreOffice, splits the text into heading-aware chunks, and writes a
 SQLite database with an FTS5 index. The PDFs are copied into the app under
 stable names so citations can open them.
 
@@ -99,7 +99,11 @@ CREATE VIRTUAL TABLE chunks_fts USING fts5(
 
 TARGET_WORDS = 300
 OVERLAP_WORDS = 40
-DOC_EXTENSIONS = {".pdf", ".pptx", ".ppt"}
+# Converted to PDF with LibreOffice; the app shows every document as a PDF.
+OFFICE_EXTENSIONS = {".pptx", ".ppt", ".docx", ".doc", ".xlsx", ".xls"}
+DOC_EXTENSIONS = {".pdf"} | OFFICE_EXTENSIONS
+# "36 Protest Form" -> "Protest Form": the numbering of a packet like the Master Packet of Forms.
+PACKET_NUMBER = re.compile(r"^\d+[a-z]?\s+")
 
 
 # MARK: - Sources and the catalog
@@ -136,6 +140,9 @@ class Source:
     # Section heading -> ACR rules it restates without citing them (OISRA's "Validity of a Re-Run"
     # is ACR 623.3). Each passage of the section gets a labeled note citing them; see cross_reference().
     see_also: dict[str, list[str]] = field(default_factory=dict)
+    # Put the document title in every passage's breadcrumb (searched, not shown). For blank forms,
+    # whose text never names them: "PROTESTS Place Country Codex…" is the Protest Form.
+    title_in_index: bool = False
 
 
 def normalize_name(name: str) -> str:
@@ -161,6 +168,24 @@ def load_catalog(path: Path) -> tuple[dict, list[dict]]:
         for entry in group["documents"]:
             entries.append({**top, **group.get("defaults", {}), **entry})
     return {**top, **data.get("unmatched", {})}, entries
+
+
+def load_folders(path: Path) -> dict[str, dict]:
+    """`folders:` defaults (merged with the top-level ones) for files in a documents subfolder
+    that no catalog entry matches, such as the 70 forms of the Master Packet of Forms."""
+    data = yaml.safe_load(path.read_text())
+    top = data.get("defaults", {})
+    return {name: {**top, **settings} for name, settings in (data.get("folders") or {}).items()}
+
+
+def folder_entry(file: Path, docs: Path, folders: dict[str, dict]) -> dict | None:
+    """The folder's defaults, with a title from the file name minus its packet number."""
+    parts = file.relative_to(docs).parts
+    if len(parts) < 2 or parts[0] not in folders:
+        return None
+    settings = folders[parts[0]]
+    title = PACKET_NUMBER.sub("", clean_title(file.stem))
+    return {**settings, "slug": settings.get("slug_prefix", "") + slugify(title), "title": title}
 
 
 def match_entry(filename: str, entries: list[dict]) -> dict | None:
@@ -195,6 +220,7 @@ def source_from(entry: dict, file: Path, sort_order: int, library: Path = DEFAUL
         supplement=(library / entry["supplement"]) if entry.get("supplement") else None,
         supplement_page=int(entry["supplement_page"]) if entry.get("supplement_page") else None,
         see_also={heading: [str(r) for r in rules] for heading, rules in (entry.get("see_also") or {}).items()},
+        title_in_index=bool(entry.get("title_in_index", False)),
     )
 
 
@@ -205,7 +231,7 @@ def find_soffice() -> str | None:
 
 
 def convert_to_pdf(file: Path, cache: Path) -> Path | None:
-    """Convert a slide deck to PDF with LibreOffice; None if LibreOffice is missing."""
+    """Convert a slide deck, Word or Excel file to PDF with LibreOffice; None if LibreOffice is missing."""
     soffice = find_soffice()
     if not soffice:
         return None
@@ -242,6 +268,7 @@ def discover(
 ) -> tuple[list[Source], list[str]]:
     """Find, identify, convert and de-duplicate the documents. Returns sources and warnings."""
     unmatched_defaults, entries = load_catalog(catalog)
+    folders = load_folders(catalog)
     order = {entry["slug"]: i for i, entry in enumerate(entries)}
     warnings: list[str] = []
     seen_hashes: dict[str, Path] = {}
@@ -257,16 +284,16 @@ def discover(
         seen_hashes[digest] = file
 
         pdf: Path | None = file
-        if file.suffix.lower() in {".ppt", ".pptx"}:
+        if file.suffix.lower() in OFFICE_EXTENSIONS:
             pdf = convert_to_pdf(file, cache)
             if pdf is None:
-                warnings.append(f"Skipped {file.name}: install LibreOffice to convert slide decks")
+                warnings.append(f"Skipped {file.name}: install LibreOffice to convert slide decks and Office files")
                 continue
         pdf, has_text = ocr_if_needed(pdf, cache)
         if not has_text:
             warnings.append(f"{file.name} has no text layer (scanned); install ocrmypdf to make it searchable")
 
-        entry = match_entry(file.name, entries)
+        entry = match_entry(file.name, entries) or folder_entry(file, docs, folders)
         if entry is None:
             title = clean_title(file.stem)
             entry = {**unmatched_defaults, "slug": slugify(title), "title": title}
@@ -1007,13 +1034,16 @@ def build(sources: list[Source], out: Path, pdf_out: Path | None = None) -> dict
             first_chunk_id = None
             for c in chunk_section(merged):
                 text = c.text
+                breadcrumb = c.breadcrumb
+                if src.title_in_index:
+                    breadcrumb = f"{src.title} › {breadcrumb}" if breadcrumb else src.title
                 if c.heading in src.see_also:
                     unmatched.discard(c.heading)
                     text += " " + cross_reference(c.heading, src.see_also[c.heading])
                 cursor = db.execute(
                     "INSERT INTO chunks (doc_id, rule_number, heading, breadcrumb, level, rule_refs, text,"
                     " page_start, page_end, part) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    (doc_id, c.rule_number, c.heading, c.breadcrumb, c.level, rule_refs(text), text,
+                    (doc_id, c.rule_number, c.heading, breadcrumb, c.level, rule_refs(text), text,
                      c.page_start, c.page_end, c.part),
                 )
                 first_chunk_id = first_chunk_id or cursor.lastrowid
@@ -1051,7 +1081,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--library", type=Path, default=DEFAULT_LIBRARY,
                         help="private document library (documents/, supplements/, eval/)")
-    parser.add_argument("--docs", type=Path, help="folder of PDF/PPTX/PPT files (default: <library>/documents)")
+    parser.add_argument("--docs", type=Path, help="folder of PDF, PPTX/PPT and Word/Excel files (default: <library>/documents)")
     parser.add_argument("--catalog", type=Path, default=HERE / "catalog.yaml")
     parser.add_argument("--out", type=Path, default=ROOT / "App/Resources/rulebook.sqlite")
     parser.add_argument("--pdf-out", type=Path, default=ROOT / "App/Resources/Documents")

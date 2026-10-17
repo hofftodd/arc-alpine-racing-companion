@@ -255,6 +255,35 @@ def test_discover_matches_dedupes_and_falls_back(pdf_factory, tmp_path):
     assert any("Not in catalog" in w for w in warnings)
 
 
+def test_folder_defaults_title_forms_and_index_their_titles(pdf_factory, tmp_path):
+    """Files in a `folders:` subfolder that match no entry take its settings, titled from the
+    file name minus the packet number; an entry still wins; title_in_index fills the breadcrumb."""
+    docs = tmp_path / "docs"
+    (docs / "forms").mkdir(parents=True)
+    for name in ["36 Protest Form.pdf", "55a FIS Injury Report Form.pdf"]:
+        (docs / "forms" / name).write_bytes(pdf_factory(name, [["PROTESTS", "Place Country Codex"]]).read_bytes())
+    (docs / "Loose Memo.pdf").write_bytes(pdf_factory("memo.pdf", MANUAL_PAGES).read_bytes())
+    catalog = write_catalog(tmp_path)
+    catalog.write_text(catalog.read_text() + """
+  - name: Race Forms
+    defaults: {collection: Race Forms, jurisdiction: fis}
+    documents:
+      - {slug: mpf-fis-injury-report-form, match: [55a FIS Injury Report Form], title: FIS Injury Report Form}
+folders:
+  forms: {slug_prefix: mpf-, collection: Race Forms, jurisdiction: usss, priority: 0.85, title_in_index: true}
+""")
+    sources, warnings = bi.discover(docs, catalog, tmp_path / "cache")
+    by_slug = {s.slug: s for s in sources}
+    form = by_slug["mpf-protest-form"]
+    assert (form.title, form.collection, form.jurisdiction, form.priority, form.title_in_index) == (
+        "Protest Form", "Race Forms", "usss", 0.85, True)
+    assert by_slug["mpf-fis-injury-report-form"].jurisdiction == "fis"
+    assert by_slug["loose-memo"].collection == "Other References"  # outside the folder: unmatched as before
+    assert [w for w in warnings if "Not in catalog" in w] == ['Not in catalog, indexed as "Loose Memo": Loose Memo.pdf']
+    db = build_db(tmp_path, form)
+    assert {b for (b,) in rows(db, "SELECT breadcrumb FROM chunks")} == {"Protest Form"}
+
+
 def test_supplements_resolve_against_the_library(pdf_factory, tmp_path):
     """Supplements live in the private library; without it the document is indexed without them."""
     docs = tmp_path / "docs"

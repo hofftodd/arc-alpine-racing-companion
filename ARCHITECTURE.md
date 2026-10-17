@@ -10,7 +10,7 @@ The app has three main parts, and each one does a single job:
 
 | Part | Think of it as… | What it does |
 |---|---|---|
-| **The library** (database) | A very fast index at the back of a book | Holds every page of the 68 reference documents, already split into short passages, and finds the passages that match a question in milliseconds. |
+| **The library** (database) | A very fast index at the back of a book | Holds every page of the 139 reference documents and forms, already split into short passages, and finds the passages that match a question in milliseconds. |
 | **The search** (RAG) | A well-organised assistant who pulls the right pages off the shelf | Decides *which* 5–20 passages are worth reading for this question, taking the race type and your role into account. |
 | **The language model** (LLM) | A careful colleague who reads those pages and summarises them | Reads only the passages it was handed and writes a short answer, citing each statement. |
 
@@ -18,7 +18,7 @@ The app has three main parts, and each one does a single job:
 flowchart LR
     Q["Your question<br/>+ race type, role,<br/>rule sets to include"] --> S
     subgraph Phone["Everything runs on your iPhone, iPad or Mac"]
-        S["Search (RAG)<br/>finds the best passages"] <--> DB[("Library<br/>68 documents<br/>~3,600 passages")]
+        S["Search (RAG)<br/>finds the best passages"] <--> DB[("Library<br/>139 documents<br/>~4,200 passages")]
         S --> L["Language model<br/>Qwen3 4B or<br/>Apple Intelligence"]
     end
     L --> A["Answer with<br/>[1] [2] citations"]
@@ -52,7 +52,7 @@ next to the PDFs themselves. It uses **SQLite**, the same database built into ev
 with its full-text search feature.
 
 > **Why not a "vector database"?** Vector databases help when searching millions of
-> passages. With about 3,600 passages, the phone can compare a question against every
+> passages. With about 4,200 passages, the phone can compare a question against every
 > one of them in under a millisecond, so a plain SQLite file plus a small list of numbers is
 > simpler and just as fast.
 

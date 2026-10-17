@@ -13,8 +13,9 @@ Delegates, Chiefs of Course and Race, timing crews, gate judges and coaches. It 
 rulebooks themselves, the **U.S. Ski & Snowboard Alpine Competition Regulations (ACR)** and the
 **FIS International Ski Competition Rules (ICR)**, plus the **Alpine Officials' Manual**, the
 **officials' study guides**, U.S. Ski & Snowboard and FIS specifications, the **OISRA**
-(Oregon high school) race rules, medical and concussion guidance, and the clinic slide decks:
-68 documents in all.
+(Oregon high school) race rules, medical and concussion guidance, the clinic slide decks, and
+the forms officials fill out at a race (the U.S. Ski & Snowboard Master Packet of Forms):
+139 documents in all.
 
 It runs entirely on your device. No signal on the hill? No problem.
 
@@ -60,8 +61,8 @@ It runs entirely on your device. No signal on the hill? No problem.
 
 ## How it works, in one paragraph
 
-When you ask a question, the app first **searches** its built-in library of 68 documents
-(about 3,600 passages) for the handful of passages that best match your question, race type
+When you ask a question, the app first **searches** its built-in library of 139 documents
+(about 4,200 passages) for the handful of passages that best match your question, race type
 and role. It then hands **only those passages** to a small language model running on your
 device, which writes a short answer and cites each passage it used. This approach is called
 *retrieval-augmented generation* (RAG). It keeps answers grounded in the actual rules
@@ -91,7 +92,7 @@ and share it yourself, see **[DISTRIBUTION.md](DISTRIBUTION.md)**.
 ```
 ingest/                     Builds the searchable library from the documents
   library/                  PRIVATE submodule (maintainers only), not part of the public code:
-    documents/              the 68 source documents (PDF, PPTX, PPT)
+    documents/              the 139 source documents (PDF, PPTX/PPT, Word, Excel); forms/ holds the Master Packet
     supplements/            hand-checked text for tables PDF extraction scrambles
     eval/                   227 questions extracted from the study guides
   documents/                (git-ignored) put your own downloaded copies here instead
@@ -118,7 +119,7 @@ Python 3.10 or newer, plus the reference documents (see
 
 ```sh
 brew install xcodegen
-brew install --cask libreoffice     # converts the clinic slide decks to PDF
+brew install --cask libreoffice     # converts slide decks and Word/Excel forms to PDF
 brew install ocrmypdf               # optional: makes scanned PDFs searchable
 
 scripts/build_resources.sh          # builds App/Resources/rulebook.sqlite (~3 min)
@@ -133,7 +134,8 @@ Intelligence or search mode.
 ### Adding or updating documents
 
 1. Put the file in `ingest/library/documents/` (or `ingest/documents/` if you use your own
-   copies). PDF, PPTX or PPT; original file names are fine.
+   copies). PDF, PPTX/PPT, Word or Excel; original file names are fine. Forms go in
+   `documents/forms/`, where they get the Race Forms settings without a catalog entry.
 2. If it's new, add an entry to `ingest/catalog.yaml` with a title, collection,
    jurisdiction (`oisra`, `usss`, `fis` or `reference`) and the roles it serves. Unknown
    files are still indexed under *Other References*, and the build prints a warning.
@@ -165,7 +167,7 @@ guides):
   Currently 42/42 for both.
 - **Everyday officials' questions** (`ingest/eval/questions.yaml`): every one must find an
   expected document in the top 5 (for table questions, the transcribed table itself).
-  Currently 38/38.
+  Currently 43/43.
 
 ### Capturing real screenshots
 
