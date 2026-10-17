@@ -1,5 +1,6 @@
 # Xcode (project is generated from project.yml)
 *.xcodeproj/
+App/Config/Info.plist
 *.xcworkspace/
 xcuserdata/
 DerivedData/
