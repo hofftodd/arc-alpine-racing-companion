@@ -180,7 +180,11 @@ public struct AnswerContext: Sendable, Hashable, Codable {
         var parts = [race.shortLabel]
         if role != .none { parts.append(role.label) }
         let excluded = Jurisdiction.allCases.filter { !included.contains($0) }
-        if !excluded.isEmpty { parts.append("no " + excluded.map(\.shortName).joined(separator: ", ")) }
+        if included.isEmpty {
+            parts.append("no rule sets")
+        } else if !excluded.isEmpty {
+            parts.append("no " + excluded.map(\.shortName).joined(separator: ", "))
+        }
         return parts.joined(separator: " · ")
     }
 }

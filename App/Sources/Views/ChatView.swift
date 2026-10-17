@@ -151,6 +151,10 @@ struct ChatView: View {
                 try? context.save()
             }
             do {
+                guard !answerContext.included.isEmpty else {
+                    reply.text = "No rule sets are included, so there is nothing to search. Tick at least one under Race & role."
+                    return
+                }
                 guard let backend else {
                     let results = try await service.search(question, limit: 8, context: answerContext)
                     reply.citations = results

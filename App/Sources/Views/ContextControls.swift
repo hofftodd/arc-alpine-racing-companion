@@ -1,16 +1,35 @@
 import RulebookKit
 import SwiftUI
 
-/// Binding to "is this rule set included", keeping at least one rule set checked.
+/// Binding to "is this rule set included". All can be unchecked (Deselect All, then tick one);
+/// asking with none checked explains that instead of searching.
 private func includeBinding(_ jurisdiction: Jurisdiction, in context: Binding<AnswerContext>) -> Binding<Bool> {
     Binding {
         context.wrappedValue.included.contains(jurisdiction)
     } set: { isOn in
         if isOn {
             context.wrappedValue.included.insert(jurisdiction)
-        } else if context.wrappedValue.included.count > 1 {
+        } else {
             context.wrappedValue.included.remove(jurisdiction)
         }
+    }
+}
+
+private struct SelectAllButton: View {
+    @Binding var context: AnswerContext
+
+    var body: some View {
+        Button("Select All") { context.included = Set(Jurisdiction.allCases) }
+            .disabled(context.included.count == Jurisdiction.allCases.count)
+    }
+}
+
+private struct DeselectAllButton: View {
+    @Binding var context: AnswerContext
+
+    var body: some View {
+        Button("Deselect All") { context.included = [] }
+            .disabled(context.included.isEmpty)
     }
 }
 
@@ -32,6 +51,8 @@ struct RaceContextMenu: View {
                 ForEach(Jurisdiction.allCases, id: \.self) { jurisdiction in
                     Toggle(jurisdiction.includeLabel, isOn: includeBinding(jurisdiction, in: $context))
                 }
+                SelectAllButton(context: $context)
+                DeselectAllButton(context: $context)
             }
         } label: {
             Label("Race & role", systemImage: "slider.horizontal.3")
@@ -63,6 +84,12 @@ struct ContextDefaultsSections: View {
             ForEach(Jurisdiction.allCases, id: \.self) { jurisdiction in
                 Toggle(jurisdiction.includeLabel, isOn: includeBinding(jurisdiction, in: $context))
             }
+            HStack {
+                SelectAllButton(context: $context)
+                Spacer()
+                DeselectAllButton(context: $context)
+            }
+            .buttonStyle(.borderless)  // two buttons in one form row, each tappable on its own
         } header: {
             Text("Include rule sets")
         } footer: {

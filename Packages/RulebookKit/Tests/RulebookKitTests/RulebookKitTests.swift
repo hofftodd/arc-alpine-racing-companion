@@ -145,6 +145,7 @@ private struct MockBackend: LLMBackend {
         #expect(noOISRA.summary == "OISRA · no OISRA")
         #expect(AnswerContext(race: .usss, role: .referee, included: [.oisra, .usss, .reference]).summary
             == "USSS · Referee · no FIS")
+        #expect(AnswerContext(race: .usss, included: []).summary == "USSS · no rule sets")
     }
 
     @Test func instructionsIncludeContextAndRole() {
