@@ -2,6 +2,8 @@
 # should answer them. A question is a hit when any `expect` document (slug from
 # catalog.yaml) appears in the top k results. Optional `context` (oisra | usss |
 # fis) and `role` (catalog role id) mirror the app's race-context and role pickers.
+# Optional `heading` must appear in the expected document's passage heading: use it for
+# tables, so the hit is the transcribed table rather than the scrambled PDF text.
 # Add questions you hear on the hill; aim to keep hit@5 above 80%.
 questions:
   # Jury and officials
@@ -73,6 +75,25 @@ questions:
   - q: How is the draw and seeding done?
     role: race-admin
     expect: [aom-05-secretariat, sg-race-admin-1, ppt-race-administration, aom-12-computers, usa-alpine-competition-guide, sg-referee]
+  # Course setting specifications (the chart in the Competition Guide and its one-page edition)
+  - q: What is the maximum vertical drop for U16 super G?
+    role: chief-of-course
+    heading: Super G (SG) course setting specifications
+    expect: [usa-course-setting-specs, usa-alpine-competition-guide]
+  - q: What is the distance between gates for U12 slalom?
+    role: chief-of-course
+    heading: Slalom (SL) course setting specifications
+    expect: [usa-course-setting-specs, usa-alpine-competition-guide]
+  - q: U14 GS vertical drop
+    heading: Giant Slalom (GS) course setting specifications
+    expect: [usa-course-setting-specs, usa-alpine-competition-guide]
+  - q: How many hairpins are allowed in a U14 slalom?
+    role: chief-of-course
+    heading: Slalom (SL) course setting specifications
+    expect: [usa-course-setting-specs, usa-alpine-competition-guide]
+  - q: Which course setting specifications apply when U10, U12 and U14 race together?
+    heading: course setting specifications
+    expect: [usa-course-setting-specs, usa-alpine-competition-guide]
   # Equipment, safety, medical
   - q: What are the helmet rules?
     expect: [fis-equipment-specs, usa-equipment-regulations, ppt-referee, ppt-chief-of-race, usa-alpine-competition-guide]

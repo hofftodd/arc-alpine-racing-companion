@@ -41,10 +41,7 @@ def test_every_standalone_study_guide_question_is_answered(db):
 def test_official_questions_hit_at_5(db):
     """Every everyday officials' question finds an expected document in the top 5."""
     questions = yaml.safe_load((ROOT / "ingest/eval/questions.yaml").read_text())["questions"]
-    misses = [
-        q["q"] for q in questions
-        if not any(slug in q["expect"] for slug in ev.search(db, q["q"], 5, q.get("context"), q.get("role")))
-    ]
+    misses = [q["q"] for q in questions if not ev.question_hit(db, q, 5)[0]]
     assert misses == []
 
 

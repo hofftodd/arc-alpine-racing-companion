@@ -310,3 +310,10 @@ def test_supplement_sections_are_indexed(pdf_factory, tmp_path):
     assert [(h, p) for h, p, _ in rows_] == [("Giant Slalom by age", 0), ("Slalom by age", 0)]
     assert "U14 GS: vertical drop max. 350 m." in rows_[0][2]
     assert "note for editors" not in " ".join(t for *_, t in rows_)
+
+
+def test_supplement_page_overrides_page_markers(tmp_path):
+    sup = tmp_path / "specs.md"
+    sup.write_text("<!-- page: 1 -->\n## Giant Slalom by age\nU14 GS.\n<!-- page: 2 -->\n## Slalom by age\nU14 SL.\n")
+    assert [s.page_start for s in bi.supplement_sections(sup)] == [0, 1]
+    assert [s.page_start for s in bi.supplement_sections(sup, page=147)] == [146, 146]

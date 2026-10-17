@@ -130,6 +130,9 @@ class Source:
     sort_order: int = 0
     # Markdown transcription of content PDF extraction garbles (tables); see ingest/supplements/.
     supplement: Path | None = None
+    # 1-based PDF page every supplement passage cites, when the same table sits on another page
+    # of this document (the Competition Guide reprints the course-setting specifications).
+    supplement_page: int | None = None
 
 
 def normalize_name(name: str) -> str:
@@ -187,6 +190,7 @@ def source_from(entry: dict, file: Path, sort_order: int, library: Path = DEFAUL
         rules_from_page=int(entry.get("rules_from_page", 0)),
         sort_order=sort_order,
         supplement=(library / entry["supplement"]) if entry.get("supplement") else None,
+        supplement_page=int(entry["supplement_page"]) if entry.get("supplement_page") else None,
     )
 
 
@@ -904,15 +908,18 @@ def merge_small_sections(sections: list[Section], slides: bool = False) -> list[
     return groups
 
 
-def supplement_sections(path: Path) -> list[Section]:
-    """'## Heading' blocks of a supplement file; '<!-- page: N -->' (1-based) sets the cited page."""
+def supplement_sections(path: Path, page: int | None = None) -> list[Section]:
+    """'## Heading' blocks of a supplement file; '<!-- page: N -->' (1-based) sets the cited page,
+    unless `page` (1-based) is given: then every passage cites that page."""
     text = re.sub(r"<!--(?!\s*page:).*?-->", "", path.read_text(), flags=re.DOTALL)
     sections: list[Section] = []
-    page = 0
+    fixed = page is not None
+    page = page - 1 if fixed else 0
     for line in text.splitlines():
         line = line.strip()
         if m := re.match(r"<!--\s*page:\s*(\d+)\s*-->", line):
-            page = int(m.group(1)) - 1
+            if not fixed:
+                page = int(m.group(1)) - 1
         elif line.startswith("## "):
             sections.append(Section(None, line[3:].strip(), "Transcribed table", page, [(page, line[3:].strip())], 1))
         elif line and sections:
@@ -981,7 +988,7 @@ def build(sources: list[Source], out: Path, pdf_out: Path | None = None) -> dict
         )
         groups = merge_small_sections(sections, slides=src.style == "slides")
         if src.supplement:
-            groups += [(s, [s]) for s in supplement_sections(src.supplement)]
+            groups += [(s, [s]) for s in supplement_sections(src.supplement, src.supplement_page)]
             digest.update(src.supplement.read_bytes())
         position = 0
         for merged, members in groups:

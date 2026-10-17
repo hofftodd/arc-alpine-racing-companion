@@ -25,6 +25,8 @@
 #   rules_from_page  (style guide) 0-based page where the numbered rules begin
 #   supplement    Markdown transcription (in the private library, ingest/library/) of tables that PDF text
 #                 extraction scrambles; each "## " section becomes a passage citing the PDF
+#   supplement_page  1-based PDF page all supplement passages cite, to reuse another document's
+#                 supplement where this document reprints the table (check it with each new edition)
 
 defaults:
   edition: "2026"
@@ -104,6 +106,9 @@ groups:
         # Chapters 1-6 are narrative with ALL-CAPS headings; chapter 7 is the ACR (numbered rules).
         style: guide
         rules_from_page: 79   # chapter 7, Alpine Competition Regulations
+        # The 2026 Course Setting Specifications chart, reprinted on PDF page 147.
+        supplement: supplements/usa-course-setting-specs.md
+        supplement_page: 147
         priority: 1.1
         roles: [competition-official, gate-judge, chief-of-course, chief-of-race, referee, start-finish-referee, technical-delegate, timing, race-admin, coach]
       - {slug: usa-course-setting-specs, match: [USA_Course_Setting_Specs], title: "U.S. Ski & Snowboard Course Setting Specifications", supplement: supplements/usa-course-setting-specs.md, roles: [technical-delegate, chief-of-course, coach]}

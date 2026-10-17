@@ -164,7 +164,8 @@ guides):
   ACR/ICR passage must be in the top 5 (what Apple Intelligence reads) and the top 10.
   Currently 42/42 for both.
 - **Everyday officials' questions** (`ingest/eval/questions.yaml`): every one must find an
-  expected document in the top 5. Currently 33/33.
+  expected document in the top 5 (for table questions, the transcribed table itself).
+  Currently 38/38.
 
 ### Capturing real screenshots
 

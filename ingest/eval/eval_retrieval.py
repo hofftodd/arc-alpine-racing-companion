@@ -219,6 +219,16 @@ def search(db: sqlite3.Connection, question: str, k: int, context: str | None, r
     return [slug for slug, *_ in search_hits(db, question, k, context, role)]
 
 
+def question_hit(db: sqlite3.Connection, item: dict, k: int) -> tuple[bool, list[str]]:
+    """An everyday question is a hit when an `expect` document is in the top k and, if the question
+    names a `heading`, that document's passage has it: a table question must find the transcribed
+    table, not the page whose extracted text scrambles it."""
+    found = search_hits(db, item["q"], k, item.get("context"), item.get("role"))
+    want = item.get("heading", "").lower()
+    ok = any(slug in item["expect"] and want in (heading or "").lower() for slug, _, _, heading, *_ in found)
+    return ok, [slug for slug, *_ in found]
+
+
 def study_guide_recall(db: sqlite3.Connection, path: Path, k: int, verbose: bool) -> dict:
     """Every standalone study-guide question must retrieve a passage that answers it: from its
     own guide, citing one of the rules the guide lists for it, or containing all its key terms."""
@@ -306,8 +316,7 @@ def main() -> int:
     questions = yaml.safe_load(args.questions.read_text())["questions"]
     hits = 0
     for item in questions:
-        found = search(db, item["q"], args.k, item.get("context"), item.get("role"))
-        ok = any(slug in item["expect"] for slug in found)
+        ok, found = question_hit(db, item, args.k)
         hits += ok
         if args.verbose or not ok:
             print(f"{'HIT ' if ok else 'MISS'} {item['q']!r} -> {found}")
