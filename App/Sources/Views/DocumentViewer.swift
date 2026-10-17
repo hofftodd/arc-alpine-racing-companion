@@ -1,16 +1,26 @@
 import PDFKit
 import SwiftUI
 
-/// Shows a bundled PDF at a page and highlights the cited passage.
+/// Shows a bundled PDF at a page and highlights the cited passage; the toolbar prints it.
 struct DocumentViewer: View {
     let filename: String
     let pageIndex: Int
     var highlight: String?
+    /// Names the print job ("Protest Form") instead of the bundled file name.
+    var title: String?
 
     var body: some View {
         if let url = Self.url(for: filename), let document = PDFDocument(url: url) {
             PDFKitView(document: document, pageIndex: pageIndex, highlight: highlight)
                 .ignoresSafeArea(edges: .bottom)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Print", systemImage: "printer") {
+                            Self.print(document, url: url, jobName: title ?? url.deletingPathExtension().lastPathComponent)
+                        }
+                        .keyboardShortcut("p")
+                    }
+                }
         } else {
             ContentUnavailableView("Document not found", systemImage: "doc.questionmark", description: Text(filename))
         }
@@ -19,6 +29,26 @@ struct DocumentViewer: View {
     static func url(for filename: String) -> URL? {
         Bundle.main.url(forResource: filename, withExtension: nil, subdirectory: "Documents")
             ?? Bundle.main.url(forResource: filename, withExtension: nil)
+    }
+
+    /// The whole document, not just the visible page: forms are printed to fill in by hand.
+    @MainActor
+    static func print(_ document: PDFDocument, url: URL, jobName: String) {
+        #if os(iOS)
+            let info = UIPrintInfo.printInfo()
+            info.outputType = .general
+            info.jobName = jobName
+            let controller = UIPrintInteractionController.shared
+            controller.printInfo = info
+            controller.printingItem = url
+            controller.present(animated: true)
+        #else
+            let info = NSPrintInfo.shared.copy() as! NSPrintInfo
+            info.jobDisposition = .spool
+            guard let operation = document.printOperation(for: info, scalingMode: .pageScaleToFit, autoRotate: true) else { return }
+            operation.jobTitle = jobName
+            operation.run()
+        #endif
     }
 
     /// Finds the passage on (or next to) the target page. Extracted text can differ

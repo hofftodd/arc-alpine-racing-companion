@@ -24,7 +24,8 @@ struct LibraryView: View {
             } else {
                 ForEach(results) { citation in
                     NavigationLink {
-                        DocumentViewer(filename: citation.filename, pageIndex: citation.pageIndex, highlight: citation.excerpt)
+                        DocumentViewer(filename: citation.filename, pageIndex: citation.pageIndex, highlight: citation.excerpt,
+                                       title: citation.documentTitle)
                             .navigationTitle(citation.shortLabel)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
@@ -75,7 +76,7 @@ struct TableOfContentsView: View {
         let entries = (try? model.store?.tableOfContents(documentID: document.id)) ?? []
         List(entries) { entry in
             NavigationLink {
-                DocumentViewer(filename: document.filename, pageIndex: entry.pageIndex)
+                DocumentViewer(filename: document.filename, pageIndex: entry.pageIndex, title: document.title)
                     .navigationTitle(entry.title)
             } label: {
                 HStack(alignment: .firstTextBaseline) {
@@ -97,7 +98,7 @@ struct TableOfContentsView: View {
         .navigationTitle(document.title)
         .toolbar {
             NavigationLink {
-                DocumentViewer(filename: document.filename, pageIndex: 0)
+                DocumentViewer(filename: document.filename, pageIndex: 0, title: document.title)
                     .navigationTitle(document.title)
             } label: {
                 Label("Open PDF", systemImage: "doc.richtext")

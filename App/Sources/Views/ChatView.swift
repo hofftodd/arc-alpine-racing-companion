@@ -56,7 +56,8 @@ struct ChatView: View {
         #endif
         .sheet(item: $openCitation) { citation in
             NavigationStack {
-                DocumentViewer(filename: citation.filename, pageIndex: citation.pageIndex, highlight: citation.excerpt)
+                DocumentViewer(filename: citation.filename, pageIndex: citation.pageIndex, highlight: citation.excerpt,
+                               title: citation.documentTitle)
                     .navigationTitle(citation.shortLabel)
                     #if os(iOS)
                         .navigationBarTitleDisplayMode(.inline)
