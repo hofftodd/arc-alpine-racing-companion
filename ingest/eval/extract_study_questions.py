@@ -29,6 +29,7 @@ from eval_retrieval import STUDY_GUIDE_QUESTIONS  # noqa: E402
 MARKER = re.compile(r"^(?:[a-z]\.|[A-Z]\.|\d{1,2}\.|\d{1,2}\)|[ivx]+\.|•|-)\s+(?P<rest>.+)$")
 QUESTION = re.compile(r"^(?P<q>[A-Z\"“'(][^?]{10,240}\?)\s*(?P<refs>\[[^\]]*\])?")
 YES_NO_WORDS = re.compile(r"\b(True|False|Yes|No)\b\s*$")
+REVIEWED_FIELDS = ("also", "standalone")  # set by hand in the questions file, kept across re-runs
 
 
 INTERROGATIVE = re.compile(
@@ -107,13 +108,14 @@ def main() -> int:
         print(f"{entry['slug']}: {len(unique)} questions")
     out = STUDY_GUIDE_QUESTIONS
     out.parent.mkdir(parents=True, exist_ok=True)
-    # Keep reviewed `also:` lists (extra documents verified to answer a question) across re-runs.
+    # Keep reviewed fields across re-runs: `also:` lists (extra documents verified to answer a
+    # question) and `standalone: false` (a question that only makes sense under its guide heading).
     if out.exists():
-        reviewed = {q["q"]: q["also"] for g in yaml.safe_load(out.read_text())["guides"] for q in g["questions"] if q.get("also")}
+        reviewed = {q["q"]: {k: q[k] for k in REVIEWED_FIELDS if k in q}
+                    for g in yaml.safe_load(out.read_text())["guides"] for q in g["questions"]}
         for guide in output["guides"]:
             for q in guide["questions"]:
-                if q["q"] in reviewed:
-                    q["also"] = reviewed[q["q"]]
+                q.update(reviewed.get(q["q"], {}))
     out.write_text(yaml.safe_dump(output, sort_keys=False, allow_unicode=True, width=120))
     print(f"Wrote {total} questions to {out}")
     return 0

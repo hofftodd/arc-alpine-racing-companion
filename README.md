@@ -157,11 +157,12 @@ study-guide checks also need the private library, since their questions are copi
 guides):
 
 - **Study-guide questions** (227 extracted automatically): every standalone question must
-  retrieve an answering passage in the top 5. Currently 193/193; 34 follow-ups that only make
-  sense in context are reported but not graded.
+  retrieve an answering passage in the top 5. Currently 192/192; 35 follow-ups that only make
+  sense in context are reported but not graded (detected automatically, or marked
+  `standalone: false` by hand in the questions file).
 - **Cited rules:** when a study-guide question cites rules (e.g. "[601.3]"), the rule's own
   ACR/ICR passage must be in the top 5 (what Apple Intelligence reads) and the top 10.
-  Currently 43/43 for both.
+  Currently 42/42 for both.
 - **Everyday officials' questions** (`ingest/eval/questions.yaml`): every one must find an
   expected document in the top 5. Currently 33/33.
 

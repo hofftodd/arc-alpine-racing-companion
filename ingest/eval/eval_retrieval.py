@@ -77,6 +77,12 @@ def standalone(question: str) -> bool:
     return len(topical) >= 2 and not BACK_REFERENCE.search(question)
 
 
+def graded(item: dict) -> bool:
+    """A study-guide question is graded unless it's a follow-up, or reviewed as `standalone: false`
+    because its subject comes from the guide's heading ("When is the first meeting?" under "Jury Meetings")."""
+    return item.get("standalone", True) and standalone(item["q"])
+
+
 def terms(question: str) -> list[str]:
     out: list[str] = []
     for raw in re.findall(r"[a-z0-9]+", question.lower()):
@@ -220,7 +226,7 @@ def study_guide_recall(db: sqlite3.Connection, path: Path, k: int, verbose: bool
     result = {"hits": 0, "total": 0, "context_dependent": 0, "misses": []}
     for guide in data["guides"]:
         for item in guide["questions"]:
-            if not standalone(item["q"]):
+            if not graded(item):
                 result["context_dependent"] += 1
                 continue
             result["total"] += 1
@@ -257,7 +263,7 @@ def cited_rule_recall(db: sqlite3.Connection, path: Path, k: int) -> dict:
     for guide in data["guides"]:
         for item in guide["questions"]:
             rules = [r for r in item["rules"] if r in known or r.lstrip("U") in known or f"U{r}" in known]
-            if not item["rules"] or not standalone(item["q"]):
+            if not item["rules"] or not graded(item):
                 continue
             if not rules:
                 result["not_in_rulebooks"] += 1
