@@ -15,6 +15,9 @@ struct RootView: View {
 
     @State private var selection: Destination?
     @State private var showingSettings = false
+    #if os(iOS)
+        @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
 
     var body: some View {
         if let error = model.loadError {
@@ -40,11 +43,14 @@ struct RootView: View {
                 }
                 .navigationTitle("ARC")
                 .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button("New Question", systemImage: "square.and.pencil", action: newConversation)
-                            .keyboardShortcut("n")
-                    }
+                    // New Question is the + in the chat toolbar. On iPhone this list is its own
+                    // screen, so it gets a + too.
                     #if os(iOS)
+                        if sizeClass == .compact {
+                            ToolbarItem(placement: .primaryAction) {
+                                Button("New Question", systemImage: "plus", action: newConversation)
+                            }
+                        }
                         ToolbarItem(placement: .topBarLeading) {
                             Button("Settings", systemImage: "gearshape") { showingSettings = true }
                         }
@@ -57,7 +63,7 @@ struct RootView: View {
                         LibraryView()
                     case .conversation(let id):
                         if let conversation = conversations.first(where: { $0.persistentModelID == id }) {
-                            ChatView(conversation: conversation)
+                            ChatView(conversation: conversation, newQuestion: newConversation)
                         } else {
                             placeholder
                         }

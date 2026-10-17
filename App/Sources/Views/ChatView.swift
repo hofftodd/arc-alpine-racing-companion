@@ -6,6 +6,7 @@ struct ChatView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.modelContext) private var context
     @Bindable var conversation: Conversation
+    let newQuestion: () -> Void
 
     @State private var draft = ""
     @State private var streaming: ChatMessage?
@@ -44,7 +45,9 @@ struct ChatView: View {
         }
         .navigationTitle(conversation.title)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button("New Question", systemImage: "plus", action: newQuestion)
+                    .keyboardShortcut("n")
                 RaceContextMenu(context: Binding(get: { conversation.context }, set: { conversation.context = $0 }))
             }
         }
