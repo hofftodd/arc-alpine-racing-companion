@@ -198,6 +198,16 @@ private struct MockBackend: LLMBackend {
         #expect(retriever.promoteEchoes(ranked, words: words).map(\.chunk.id) == [3, 1, 2])
     }
 
+    @Test func crossReferenceIsFollowedButNotShown() {
+        let text = "3. The re-run remains valid if it proves slower than the first (hindered) run, 4. If the claim is"
+            + " unjustified, the competitor is disqualified. (ARC cross-reference: Validity of a Re-Run, see ACR 623.3.1 and ACR 623.3.3.)"
+        let chunk = RuleChunk(id: 1, documentID: 2, ruleNumber: nil, heading: "Validity of a Re-Run", breadcrumb: nil, level: 0,
+                              ruleRefs: [], text: text, pageStart: 0, pageEnd: 0, part: 0)
+        #expect(chunk.documentText.hasSuffix("the competitor is disqualified."))
+        let words = QueryParser.terms(in: "What happens if a racer gets a re-run?")
+        #expect(HybridRetriever.citedRules(near: words, in: text, limit: 2) == ["623.3.1", "623.3.3"])
+    }
+
     @Test func excludedRulebooksAreNotFollowed() throws {
         let store = try fixtureStore()
         #expect(try store.ruleChunk(number: "614.1", prefer: .usss, included: [.usss])?.ruleNumber == "614")

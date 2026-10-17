@@ -120,7 +120,7 @@ public final class AnswerService: Sendable {
             let tag = citation.governing
                 ? "\(citation.jurisdiction.shortName), governing" : citation.jurisdiction.shortName
             let header = "[\(index)] (\(tag)) \(citation.documentTitle), \(citation.title) (\(citation.pageDisplay))"
-            var body = hit.chunk.text
+            var body = hit.chunk.documentText
             let cost = TokenEstimate.tokens(in: header) + TokenEstimate.tokens(in: body) + 2
             if cost > remaining {
                 // Always include at least one excerpt, trimmed to fit.

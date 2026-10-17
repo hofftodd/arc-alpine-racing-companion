@@ -25,6 +25,9 @@
 #   rules_from_page  (style guide) 0-based page where the numbered rules begin
 #   supplement    Markdown transcription (in the private library, ingest/library/) of tables that PDF text
 #                 extraction scrambles; each "## " section becomes a passage citing the PDF
+#   see_also      section heading -> ACR rules the section restates without citing them; each of its
+#                 passages gets a labeled "(ARC cross-reference: …, see ACR 623.3.3.)" note, so the
+#                 rule text is retrieved alongside (check the headings with each new edition)
 #   supplement_page  1-based PDF page all supplement passages cite, to reuse another document's
 #                 supplement where this document reprints the table (check it with each new edition)
 
@@ -50,6 +53,11 @@ groups:
         match: [OSIRA_ALPINE_RACE_RULES, OISRA_ALPINE_RACE_RULES, OISRA Alpine Race Rules]
         title: OISRA Alpine Race Rules
         edition: "April 2026"
+        see_also:
+          Re-Runs: ["623.1"]
+          Grounds for Interference: ["623.2"]
+          # OISRA L.3 says the re-run "remains valid if it proves slower"; ACR 623.3.3 says "even if".
+          Validity of a Re-Run: ["623.3.1", "623.3.3"]
 
   - name: Alpine Officials' Manual
     defaults:

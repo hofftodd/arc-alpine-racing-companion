@@ -67,6 +67,14 @@ public struct RuleChunk: Identifiable, Hashable, Sendable {
     public let pageEnd: Int
     public let part: Int
 
+    /// The passage as the document has it, without the "(ARC cross-reference: …)" note the build adds
+    /// to passages that restate ACR rules (catalog `see_also`). The note is for retrieval to follow;
+    /// shown to the model, it was quoted as part of the rule.
+    public var documentText: String {
+        guard let note = text.range(of: " (ARC cross-reference:", options: .backwards) else { return text }
+        return String(text[..<note.lowerBound])
+    }
+
     /// "Rule 614.2 Inspection Time", "§4.2.5 Penalty", or the heading alone.
     public var title: String {
         let number = ruleNumber.map(RuleChunk.formatNumber)

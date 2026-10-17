@@ -133,6 +133,9 @@ class Source:
     # 1-based PDF page every supplement passage cites, when the same table sits on another page
     # of this document (the Competition Guide reprints the course-setting specifications).
     supplement_page: int | None = None
+    # Section heading -> ACR rules it restates without citing them (OISRA's "Validity of a Re-Run"
+    # is ACR 623.3). Each passage of the section gets a labeled note citing them; see cross_reference().
+    see_also: dict[str, list[str]] = field(default_factory=dict)
 
 
 def normalize_name(name: str) -> str:
@@ -191,6 +194,7 @@ def source_from(entry: dict, file: Path, sort_order: int, library: Path = DEFAUL
         sort_order=sort_order,
         supplement=(library / entry["supplement"]) if entry.get("supplement") else None,
         supplement_page=int(entry["supplement_page"]) if entry.get("supplement_page") else None,
+        see_also={heading: [str(r) for r in rules] for heading, rules in (entry.get("see_also") or {}).items()},
     )
 
 
@@ -908,6 +912,13 @@ def merge_small_sections(sections: list[Section], slides: bool = False) -> list[
     return groups
 
 
+def cross_reference(heading: str, rules: list[str]) -> str:
+    """Note for a passage that restates ACR rules without citing them. Retrieval follows the cited
+    rules, as it does a study guide's "[623.3.3]", so the model reads the ACR wording alongside:
+    OISRA's "remains valid if it proves slower" lacks the ACR's "even", and was read as "only if"."""
+    return f"(ARC cross-reference: {heading}, see " + " and ".join(f"ACR {r}" for r in rules) + ".)"
+
+
 def supplement_sections(path: Path, page: int | None = None) -> list[Section]:
     """'## Heading' blocks of a supplement file; '<!-- page: N -->' (1-based) sets the cited page,
     unless `page` (1-based) is given: then every passage cites that page."""
@@ -991,13 +1002,18 @@ def build(sources: list[Source], out: Path, pdf_out: Path | None = None) -> dict
             groups += [(s, [s]) for s in supplement_sections(src.supplement, src.supplement_page)]
             digest.update(src.supplement.read_bytes())
         position = 0
+        unmatched = set(src.see_also)
         for merged, members in groups:
             first_chunk_id = None
             for c in chunk_section(merged):
+                text = c.text
+                if c.heading in src.see_also:
+                    unmatched.discard(c.heading)
+                    text += " " + cross_reference(c.heading, src.see_also[c.heading])
                 cursor = db.execute(
                     "INSERT INTO chunks (doc_id, rule_number, heading, breadcrumb, level, rule_refs, text,"
                     " page_start, page_end, part) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    (doc_id, c.rule_number, c.heading, c.breadcrumb, c.level, rule_refs(c.text), c.text,
+                    (doc_id, c.rule_number, c.heading, c.breadcrumb, c.level, rule_refs(text), text,
                      c.page_start, c.page_end, c.part),
                 )
                 first_chunk_id = first_chunk_id or cursor.lastrowid
@@ -1015,6 +1031,10 @@ def build(sources: list[Source], out: Path, pdf_out: Path | None = None) -> dict
                     position += 1
         stats["sections"] += len(sections)
         stats["documents"] += 1
+        if src.see_also:
+            digest.update(repr(sorted(src.see_also.items())).encode())  # notes change passage text
+        for heading in sorted(unmatched):
+            print(f"warning: {src.slug}: see_also heading \"{heading}\" matches no section", file=sys.stderr)
 
     db.execute("INSERT INTO chunks_fts(chunks_fts) VALUES ('rebuild')")
     db.executemany(

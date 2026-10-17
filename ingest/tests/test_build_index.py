@@ -312,6 +312,19 @@ def test_supplement_sections_are_indexed(pdf_factory, tmp_path):
     assert "note for editors" not in " ".join(t for *_, t in rows_)
 
 
+def test_see_also_adds_a_cross_reference_the_retriever_can_follow(pdf_factory, tmp_path, capsys):
+    sup = tmp_path / "oisra.md"
+    sup.write_text("## Validity of a Re-Run\nThe re-run remains valid if it proves slower.\n\n## Protests\nWithin 15 minutes.\n")
+    src = bi.Source(slug="oisra", file=pdf_factory("oisra.pdf", [["Rules", "text"]]), title="OISRA", supplement=sup,
+                    see_also={"Validity of a Re-Run": ["623.3.1", "623.3.3"], "Renamed Section": ["640"]})
+    db = build_db(tmp_path, src)
+    text, refs = rows(db, "SELECT text, rule_refs FROM chunks WHERE heading = 'Validity of a Re-Run'")[0]
+    assert text.endswith("(ARC cross-reference: Validity of a Re-Run, see ACR 623.3.1 and ACR 623.3.3.)")
+    assert "623.3.3" in refs
+    assert "cross-reference" not in rows(db, "SELECT text FROM chunks WHERE heading = 'Protests'")[0][0]
+    assert 'see_also heading "Renamed Section" matches no section' in capsys.readouterr().err
+
+
 def test_supplement_page_overrides_page_markers(tmp_path):
     sup = tmp_path / "specs.md"
     sup.write_text("<!-- page: 1 -->\n## Giant Slalom by age\nU14 GS.\n<!-- page: 2 -->\n## Slalom by age\nU14 SL.\n")

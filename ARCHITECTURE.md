@@ -142,6 +142,10 @@ supplied is dropped, so every link opens a real page.
   fingerprints automatically on first launch.
 - **Tables.** PDF text extraction scrambles some tables (like the course-setting
   specifications), so those get a hand-checked text version in the library's `supplements/`.
+- **Cross-references.** Some OISRA sections restate ACR rules without citing them, sometimes
+  in looser words (OISRA's re-run "remains valid if it proves slower"; the ACR says "even if").
+  `see_also` in `catalog.yaml` links such a section to its ACR rules, so the search brings the
+  ACR text along and the model can read both.
 - **Tests.** The project extracts the review questions from the officials' study guides
   (227 of them) and checks that every standalone question retrieves a passage that answers
   it (100%), and that when a guide cites a rule for a question, that rule's text from the

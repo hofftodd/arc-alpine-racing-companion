@@ -215,7 +215,7 @@ public final class RulebookStore: @unchecked Sendable {
             jurisdiction: jurisdiction, ruleNumber: chunk.ruleNumber, title: chunk.title,
             pageIndex: chunk.pageStart,
             pageLabel: pageLabel(documentID: chunk.documentID, pageIndex: chunk.pageStart),
-            excerpt: chunk.text, ruleRefs: chunk.ruleRefs, governing: governing == jurisdiction)
+            excerpt: chunk.documentText, ruleRefs: chunk.ruleRefs, governing: governing == jurisdiction)
     }
 
     // MARK: SQLite plumbing
