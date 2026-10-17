@@ -94,6 +94,16 @@ private struct MockBackend: LLMBackend {
         #expect(QueryParser.ftsExpression(for: "OSIRA re-run", extraTerms: ["referee", "run"])
             == "\"osira\" OR \"oisra\" OR \"re\" OR \"run\" OR \"referee\"")
     }
+
+    @Test func namesDisciplinesWithoutConfusingGiantSlalomForSlalom() {
+        #expect(QueryParser.disciplines(in: "How far apart should GS gates be?") == [.giantSlalom])
+        #expect(QueryParser.disciplines(in: "Giant Slalom — Technical Data") == [.giantSlalom])
+        #expect(QueryParser.disciplines(in: "Slalom — Technical Data") == [.slalom])
+        #expect(QueryParser.disciplines(in: "Kombi SL/GS") == [.slalom, .giantSlalom])
+        #expect(QueryParser.disciplines(in: "Gate Panels for Giant Slalom, Super-G and Downhill")
+            == [.giantSlalom, .superG, .downhill])
+        #expect(QueryParser.disciplines(in: "Inspection of the Course").isEmpty)
+    }
 }
 
 @Suite struct ContextTests {

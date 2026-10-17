@@ -110,4 +110,23 @@ public enum QueryParser {
         "rule", "rules", "too", "very", "also", "just", "not", "than", "then", "much", "many", "more",
         "most", "all",
     ]
+
+    /// Alpine disciplines, as questions and headings name them.
+    public enum Discipline: Sendable, CaseIterable {
+        case downhill, superG, giantSlalom, slalom
+    }
+
+    private static let disciplinePatterns: [(Discipline, NSRegularExpression)] = [
+        (.downhill, #"\b(dh|downhill)\b"#),
+        (.superG, #"\b(sg|super[\s-]?g)\b"#),
+        (.giantSlalom, #"\b(gs|giant[\s-]slalom)\b"#),
+        // "Slalom" on its own, not the end of "Giant Slalom".
+        (.slalom, #"\bsl\b|(?<!giant )(?<!giant-)\bslalom\b"#),
+    ].map { ($0, try! NSRegularExpression(pattern: $1, options: .caseInsensitive)) }
+
+    /// Disciplines named in `text`: "GS" or "Giant Slalom" is giant slalom, not slalom.
+    public static func disciplines(in text: String) -> Set<Discipline> {
+        let range = NSRange(text.startIndex..., in: text)
+        return Set(disciplinePatterns.filter { $0.1.firstMatch(in: text, range: range) != nil }.map(\.0))
+    }
 }

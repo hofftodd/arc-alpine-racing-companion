@@ -20,6 +20,9 @@ public final class HybridRetriever: Sendable {
     private let echoPromote = 2
     /// A heading that contains every topical term of the question ("FIS Homologated Gate Panels").
     private let headingCoverBoost = 1.5
+    /// A passage about another discipline than the one asked about: "GS" also searches "slalom",
+    /// which matches every slalom passage, and the OISRA weight lifted OISRA's slalom data.
+    private let otherDisciplinePenalty = 0.3
 
     public init(store: RulebookStore, semantic: SemanticIndex?) {
         self.store = store
@@ -64,6 +67,7 @@ public final class HybridRetriever: Sendable {
 
         let words = QueryParser.terms(in: question)
         let topical = words.filter { !QueryParser.genericWords.contains($0) }.map { $0.prefix(5).lowercased() }
+        let asked = QueryParser.disciplines(in: question)
         let ranked = fused
             .compactMap { id, score -> SearchHit? in
                 guard let chunk = chunksByID[id], context.includes(store.document(id: chunk.documentID)) else {
@@ -74,6 +78,10 @@ public final class HybridRetriever: Sendable {
                     topical.allSatisfy({ heading.contains($0) })
                 {
                     weight *= headingCoverBoost
+                }
+                if !asked.isEmpty {
+                    let named = QueryParser.disciplines(in: [chunk.heading, chunk.breadcrumb].compactMap { $0 }.joined(separator: " "))
+                    if !named.isEmpty, named.isDisjoint(with: asked) { weight *= otherDisciplinePenalty }
                 }
                 return SearchHit(chunk: chunk, score: score * weight)
             }

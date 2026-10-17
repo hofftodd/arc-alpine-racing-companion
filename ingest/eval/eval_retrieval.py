@@ -44,6 +44,18 @@ BACK_REFERENCE = re.compile(r"\b(this|that|these|those|they|them|their|she|he|he
 
 
 HEADING_COVER_BOOST = 1.5  # heading contains every topical term of the question
+OTHER_DISCIPLINE_PENALTY = 0.3  # heading names only other disciplines than the question
+# Mirror of QueryParser.disciplines: "GS" / "Giant Slalom" is giant slalom, not slalom.
+DISCIPLINES = {
+    "downhill": re.compile(r"\b(dh|downhill)\b", re.I),
+    "super-g": re.compile(r"\b(sg|super[\s-]?g)\b", re.I),
+    "giant-slalom": re.compile(r"\b(gs|giant[\s-]slalom)\b", re.I),
+    "slalom": re.compile(r"\bsl\b|(?<!giant )(?<!giant-)\bslalom\b", re.I),
+}
+
+
+def disciplines(text: str) -> set[str]:
+    return {name for name, pattern in DISCIPLINES.items() if pattern.search(text)}
 ECHO_MIN = 0.6             # Jaccard similarity for "this passage asks the same question"
 ECHO_PROMOTE = 2           # passages moved to the front when they echo the question
 
@@ -104,7 +116,7 @@ ROLE_TERMS = {  # OfficialRole.searchTerms
 def _keyword(db: sqlite3.Connection, expression: str) -> list[tuple]:
     return db.execute(
         "SELECT c.id, d.slug, d.priority, d.jurisdiction, coalesce(d.roles, ''), c.page_start, c.page_end,"
-        " c.heading, coalesce(c.rule_refs, '')"
+        " c.heading, coalesce(c.rule_refs, ''), coalesce(c.breadcrumb, '')"
         " FROM chunks_fts JOIN chunks c ON c.id = chunks_fts.rowid JOIN documents d ON d.id = c.doc_id"
         " WHERE chunks_fts MATCH ? ORDER BY bm25(chunks_fts, 4.0, 3.0, 1.0, 2.0, 1.0) LIMIT 40",
         (expression,),
@@ -123,14 +135,18 @@ def search_hits(db: sqlite3.Connection, question: str, k: int, context: str | No
     if len(key_terms) > 1:
         lists.append((_keyword(db, " AND ".join(f'"{t}"' for t in key_terms)), PRECISION_WEIGHT))
     weights = CONTEXT_WEIGHTS[context]
+    asked = disciplines(question)
     fused: dict[int, float] = {}
     info: dict[int, tuple] = {}
     for ranked, list_weight in lists:
-        for rank, (cid, slug, priority, jurisdiction, roles, start, end, heading, refs) in enumerate(ranked):
+        for rank, (cid, slug, priority, jurisdiction, roles, start, end, heading, refs, crumb) in enumerate(ranked):
             fused[cid] = fused.get(cid, 0) + list_weight / (60 + rank + 1)
             weight = priority * weights.get(jurisdiction, 1.0) * (ROLE_BOOST if role and f" {role} " in roles else 1)
             if heading and len(key_terms) > 1 and all(t[:5] in heading.lower() for t in key_terms):
                 weight *= HEADING_COVER_BOOST
+            named = disciplines(f"{heading or ''} {crumb}")
+            if asked and named and not named & asked:
+                weight *= OTHER_DISCIPLINE_PENALTY
             info[cid] = (weight, (slug, start, end, heading, refs, cid))
     scores = {cid: fused[cid] * info[cid][0] for cid in fused}
     ranked = sorted(scores, key=lambda cid: (-scores[cid], cid))
