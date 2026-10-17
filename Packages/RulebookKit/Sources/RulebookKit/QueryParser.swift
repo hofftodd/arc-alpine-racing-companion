@@ -75,9 +75,11 @@ public enum QueryParser {
     static func terms(in text: String) -> [String] {
         var seen = Set<String>()
         var terms: [String] = []
-        let text = text.lowercased()
-        let normalized = rerunSpelling.stringByReplacingMatches(
-            in: text, range: NSRange(text.startIndex..., in: text), withTemplate: "rerun")
+        var normalized = text.lowercased()
+        for (spelling, term) in spellings {
+            normalized = spelling.stringByReplacingMatches(
+                in: normalized, range: NSRange(normalized.startIndex..., in: normalized), withTemplate: term)
+        }
         for raw in normalized.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
             let word = String(raw)
             // Keep the abbreviation itself too: documents use both "GS" and "Giant Slalom".
@@ -90,12 +92,19 @@ public enum QueryParser {
         return terms
     }
 
-    /// "re-run", "re run", "reruns": one term, "rerun". The documents use both spellings, and
-    /// the index splits "re-run" into "re" + "run", so `synonyms` searches it as that phrase too.
-    private static let rerunSpelling = try! NSRegularExpression(pattern: #"\bre[\s-]*runs?\b"#)
+    /// Spellings that become one term, which `synonyms` then searches in all its forms:
+    /// "re-run", "re run", "reruns" -> "rerun" (the index splits "re-run" into "re" + "run");
+    /// "Super-G", "super G", "super giant slalom" -> "sg" (a lone "G" is too short to be a term).
+    private static let spellings: [(NSRegularExpression, String)] = [
+        (#"\bre[\s-]*runs?\b"#, "rerun"),
+        (#"\bsuper[\s-]giant[\s-]slalom\b|\bsuper[\s-]?g\b"#, "sg"),
+    ].map { (try! NSRegularExpression(pattern: $0), $1) }
 
     /// Spellings the documents use interchangeably; a term also matches each phrase listed.
-    static let synonyms: [String: [String]] = ["rerun": ["re run"]]
+    static let synonyms: [String: [String]] = [
+        "rerun": ["re run"],
+        "sg": ["super g", "super giant slalom"],
+    ]
 
     /// Common race-office shorthand expanded so it matches the documents' wording.
     static let abbreviations: [String: String] = [
@@ -106,7 +115,6 @@ public enum QueryParser {
         "dq": "disqualified",
         "gs": "giant slalom",
         "sl": "slalom",
-        "sg": "super",
         "dh": "downhill",
         "ac": "alpine combined",
         "coc": "chief of course",
@@ -134,13 +142,15 @@ public enum QueryParser {
 
     private static let disciplinePatterns: [(Discipline, NSRegularExpression)] = [
         (.downhill, #"\b(dh|downhill)\b"#),
-        (.superG, #"\b(sg|super[\s-]?g)\b"#),
-        (.giantSlalom, #"\b(gs|giant[\s-]slalom)\b"#),
+        (.superG, #"\b(sg|super[\s-]?g|super[\s-]giant[\s-]slalom)\b"#),
+        // "Giant Slalom", not the end of "Super Giant Slalom".
+        (.giantSlalom, #"\bgs\b|(?<!super )(?<!super-)\bgiant[\s-]slalom\b"#),
         // "Slalom" on its own, not the end of "Giant Slalom".
         (.slalom, #"\bsl\b|(?<!giant )(?<!giant-)\bslalom\b"#),
     ].map { ($0, try! NSRegularExpression(pattern: $1, options: .caseInsensitive)) }
 
-    /// Disciplines named in `text`: "GS" or "Giant Slalom" is giant slalom, not slalom.
+    /// Disciplines named in `text`: "GS" or "Giant Slalom" is giant slalom, not slalom, and
+    /// "Super Giant Slalom" is super-G.
     public static func disciplines(in text: String) -> Set<Discipline> {
         let range = NSRange(text.startIndex..., in: text)
         return Set(disciplinePatterns.filter { $0.1.firstMatch(in: text, range: range) != nil }.map(\.0))

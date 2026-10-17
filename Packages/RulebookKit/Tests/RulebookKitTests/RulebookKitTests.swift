@@ -104,6 +104,15 @@ private struct MockBackend: LLMBackend {
         #expect(QueryParser.terms(in: "forerunner rerouted") == ["forerunner", "rerouted"])
     }
 
+    @Test func superGSpellingsSearchAsOneTerm() {
+        for spelling in ["SG", "Super G", "super-G", "SuperG", "super giant slalom", "Super-Giant Slalom"] {
+            #expect(QueryParser.terms(in: "U14 \(spelling) vertical drop") == ["u14", "sg", "vertical", "drop"])
+        }
+        #expect(QueryParser.ftsExpression(for: "super G")
+            == "(\"sg\" OR \"super g\" OR \"super giant slalom\")")
+        #expect(QueryParser.terms(in: "super giant") == ["super", "giant"])
+    }
+
     @Test func namesDisciplinesWithoutConfusingGiantSlalomForSlalom() {
         #expect(QueryParser.disciplines(in: "How far apart should GS gates be?") == [.giantSlalom])
         #expect(QueryParser.disciplines(in: "Giant Slalom — Technical Data") == [.giantSlalom])
@@ -112,6 +121,7 @@ private struct MockBackend: LLMBackend {
         #expect(QueryParser.disciplines(in: "Gate Panels for Giant Slalom, Super-G and Downhill")
             == [.giantSlalom, .superG, .downhill])
         #expect(QueryParser.disciplines(in: "Inspection of the Course").isEmpty)
+        #expect(QueryParser.disciplines(in: "U16 super giant slalom vertical drop") == [.superG])
     }
 }
 

@@ -48,8 +48,8 @@ OTHER_DISCIPLINE_PENALTY = 0.3  # heading names only other disciplines than the 
 # Mirror of QueryParser.disciplines: "GS" / "Giant Slalom" is giant slalom, not slalom.
 DISCIPLINES = {
     "downhill": re.compile(r"\b(dh|downhill)\b", re.I),
-    "super-g": re.compile(r"\b(sg|super[\s-]?g)\b", re.I),
-    "giant-slalom": re.compile(r"\b(gs|giant[\s-]slalom)\b", re.I),
+    "super-g": re.compile(r"\b(sg|super[\s-]?g|super[\s-]giant[\s-]slalom)\b", re.I),
+    "giant-slalom": re.compile(r"\bgs\b|(?<!super )(?<!super-)\bgiant[\s-]slalom\b", re.I),
     "slalom": re.compile(r"\bsl\b|(?<!giant )(?<!giant-)\bslalom\b", re.I),
 }
 
@@ -95,10 +95,12 @@ def graded(item: dict) -> bool:
     return item.get("standalone", True) and standalone(item["q"])
 
 
-# Mirror of QueryParser.rerunSpelling / synonyms: "re-run", "re run" and "reruns" are the term
-# "rerun", which also matches the phrase "re run" (the index splits "re-run" in two).
-RERUN_SPELLING = re.compile(r"\bre[\s-]*runs?\b")
-SYNONYMS = {"rerun": ["re run"]}
+# Mirror of QueryParser.spellings / synonyms: "re-run", "re run" and "reruns" are the term "rerun",
+# which also matches the phrase "re run" (the index splits "re-run" in two); "Super-G", "super G"
+# and "super giant slalom" are "sg", which also matches "super g" and "super giant slalom".
+SPELLINGS = [(re.compile(r"\bre[\s-]*runs?\b"), "rerun"),
+             (re.compile(r"\bsuper[\s-]giant[\s-]slalom\b|\bsuper[\s-]?g\b"), "sg")]
+SYNONYMS = {"rerun": ["re run"], "sg": ["super g", "super giant slalom"]}
 
 
 def fts_term(term: str) -> str:
@@ -108,7 +110,10 @@ def fts_term(term: str) -> str:
 
 def terms(question: str) -> list[str]:
     out: list[str] = []
-    for raw in re.findall(r"[a-z0-9]+", RERUN_SPELLING.sub("rerun", question.lower())):
+    text = question.lower()
+    for spelling, term in SPELLINGS:
+        text = spelling.sub(term, text)
+    for raw in re.findall(r"[a-z0-9]+", text):
         # Keep the abbreviation itself too: documents use both "GS" and "Giant Slalom".
         for t in ([raw] + ABBREVIATIONS[raw].split()) if raw in ABBREVIATIONS else [raw]:
             if len(t) > 1 and t not in STOPWORDS and t not in out:
