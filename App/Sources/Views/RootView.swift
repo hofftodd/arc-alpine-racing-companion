@@ -9,6 +9,8 @@ struct RootView: View {
     @Query(sort: \Conversation.createdAt, order: .reverse) private var conversations: [Conversation]
 
     enum Destination: Hashable {
+        /// "Ask": the most recent question's chat.
+        case chat
         case conversation(PersistentIdentifier)
         case library
     }
@@ -25,6 +27,9 @@ struct RootView: View {
         } else {
             NavigationSplitView {
                 List(selection: $selection) {
+                    NavigationLink(value: Destination.chat) {
+                        Label("Ask", systemImage: "bubble.left.and.text.bubble.right")
+                    }
                     NavigationLink(value: Destination.library) {
                         Label("Library", systemImage: "books.vertical")
                     }
@@ -59,6 +64,12 @@ struct RootView: View {
             } detail: {
                 NavigationStack {
                     switch selection {
+                    case .chat:
+                        if let latest = conversations.first {
+                            ChatView(conversation: latest, newQuestion: newConversation)
+                        } else {
+                            placeholder
+                        }
                     case .library:
                         LibraryView()
                     case .conversation(let id):
@@ -78,6 +89,10 @@ struct RootView: View {
             }
             .onAppear {
                 if selection == nil, conversations.isEmpty { newConversation() }
+            }
+            .onChange(of: selection) {
+                // Ask with no questions yet starts one.
+                if selection == .chat, conversations.isEmpty { newConversation() }
             }
         }
     }
