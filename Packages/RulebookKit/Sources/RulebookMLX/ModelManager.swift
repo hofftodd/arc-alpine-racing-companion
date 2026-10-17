@@ -120,7 +120,7 @@ public final class ModelManager {
             using: #huggingFaceTokenizerLoader(),
             configuration: ModelConfiguration(id: Self.repositoryID)
         ) { progress in
-            Task { @MainActor [weak self] in
+            Task { @MainActor [weak self = self] in
                 self?.state = .downloading(progress: progress.fractionCompleted)
             }
         }

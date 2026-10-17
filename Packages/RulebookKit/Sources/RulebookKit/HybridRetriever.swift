@@ -101,7 +101,7 @@ public final class HybridRetriever: Sendable {
         return promoted.map { ranked[$0] } + ranked.enumerated().filter { !promoted.contains($0.offset) }.map(\.element)
     }
 
-    nonisolated(unsafe) private static let questionClauseBreak = try! NSRegularExpression(
+    private static let questionClauseBreak = try! NSRegularExpression(
         pattern: #"(?<=[.!\]])\s+|\s(?=[a-z]\.\s)|\s(?=\d{1,2}\.\s)"#)
 
     /// Best similarity between the user's question and any question asked in `text`.
@@ -140,11 +140,11 @@ public final class HybridRetriever: Sendable {
 
     // Split at list markers ("c. ", "4. ") and after sentence ends or citations, but never right
     // after "?": study guides put the answer's rule after the question ("…Referees? [601.3]").
-    nonisolated(unsafe) private static let sentenceBreak = try! NSRegularExpression(
+    private static let sentenceBreak = try! NSRegularExpression(
         pattern: #"(?<=[.!\]])\s+(?=[A-Z])|\s(?=[a-z]\.\s)|\s(?=\d{1,2}\.\s)"#)
-    nonisolated(unsafe) private static let citation = try! NSRegularExpression(
+    private static let citation = try! NSRegularExpression(
         pattern: #"\[([^\]]{3,200})\]|\b(?:ICR|ACR|art\.?|[Rr]ule)\s+(U?\d{3}(?:\.\d{1,3}){0,5})"#)
-    nonisolated(unsafe) private static let ruleNumber = try! NSRegularExpression(pattern: #"(?<![\d.])U?\d{3}(?:\.\d{1,3}){0,5}(?![\d])"#)
+    private static let ruleNumber = try! NSRegularExpression(pattern: #"(?<![\d.])U?\d{3}(?:\.\d{1,3}){0,5}(?![\d])"#)
 
     /// Rules cited in the sentences of `text` most similar to the question (Jaccard over topical
     /// stems; question sentences win ties). Mirrors cited_rules_near in eval_retrieval.py.
