@@ -2,7 +2,7 @@ import Foundation
 
 /// A language model that can turn retrieved rule excerpts into an answer.
 public protocol LLMBackend: Sendable {
-    /// Shown in the UI, e.g. "Qwen3 4B (on device)".
+    /// Shown in the UI, e.g. "Gemma 4 E4B (on device)".
     var displayName: String { get }
     /// Tokens available for instructions + excerpts + question (excludes the answer).
     var promptTokenBudget: Int { get }
@@ -12,7 +12,7 @@ public protocol LLMBackend: Sendable {
     func stream(instructions: String, prompt: String) -> AsyncThrowingStream<String, Error>
 }
 
-/// Which engine the user wants. `.automatic` prefers MLX, then Apple, then search-only.
+/// Which engine the user wants. `.automatic` prefers Apple, then MLX, then search-only.
 public enum EnginePreference: String, CaseIterable, Identifiable, Sendable, Codable {
     case automatic
     case mlx
@@ -24,7 +24,7 @@ public enum EnginePreference: String, CaseIterable, Identifiable, Sendable, Coda
     public var label: String {
         switch self {
         case .automatic: "Automatic"
-        case .mlx: "Qwen3 4B (MLX)"
+        case .mlx: "Gemma 4 E4B (MLX)"
         case .apple: "Apple Intelligence"
         case .searchOnly: "Search only"
         }

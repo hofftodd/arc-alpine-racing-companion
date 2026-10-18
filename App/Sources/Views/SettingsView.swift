@@ -18,13 +18,13 @@ struct SettingsView: View {
                 }
                 LabeledContent("In use", value: model.engineName)
             } footer: {
-                Text("Automatic uses Qwen3 4B when it's downloaded and the device has enough memory, then Apple Intelligence, then search only. Everything runs on this device; questions never leave it.")
+                Text("Automatic uses Apple Intelligence when it's available, then \(ModelManager.displayName) if it's downloaded, then search only. Everything runs on this device; questions never leave it.")
             }
 
-            Section("Qwen3 4B model") {
+            Section("\(ModelManager.displayName) model") {
                 modelStatus
                 if !ModelManager.deviceIsCapable {
-                    Text("This device has less than 6 GB of memory, so Qwen3 4B may be slow or be closed by the system. Apple Intelligence is recommended instead.")
+                    Text("This device has less than 8 GB of memory, so \(ModelManager.displayName) may be slow or be closed by the system. Apple Intelligence is recommended instead.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }

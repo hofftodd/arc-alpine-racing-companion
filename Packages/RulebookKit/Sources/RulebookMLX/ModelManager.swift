@@ -6,9 +6,9 @@ import MLXLMCommon
 import Observation
 import Tokenizers
 
-/// Downloads, stores, loads and unloads the Qwen3-4B weights.
+/// Downloads, stores, loads and unloads the Gemma 4 E4B weights.
 ///
-/// The weights (~2.3 GB) are downloaded once from Hugging Face into Application
+/// The weights (~5.2 GB) are downloaded once from Hugging Face into Application
 /// Support (excluded from backup, not purged by iOS). After that the model loads
 /// from that folder with no network access.
 @MainActor
@@ -23,23 +23,33 @@ public final class ModelManager {
         case failed(String)
     }
 
-    public static let repositoryID = "mlx-community/Qwen3-4B-Instruct-2507-4bit"
-    public static let approximateDownloadSize = "2.3 GB"
+    /// Gemma 4 E4B was the most accurate small model in the bake-off (no wrong statements, every
+    /// answer cited). The QAT build is larger (6.8 GB), so this is the plain 4-bit one.
+    public static let repositoryID = "mlx-community/gemma-4-e4b-it-4bit"
+    public nonisolated static let displayName = "Gemma 4 E4B"
+    public static let approximateDownloadSize = "5.2 GB"
 
-    /// Qwen3-4B needs about 3 GB of RAM while running; below this, use Apple's model instead.
-    public static let minimumMemory: UInt64 = 6 * 1_073_741_824
+    /// Gemma 4 E4B needs about 5 GB of RAM while running; below this, use Apple's model instead.
+    public static let minimumMemory: UInt64 = 8 * 1_073_741_824
 
     public private(set) var state: State
     private var container: ModelContainer?
     private var loadTask: Task<Void, Never>?
 
     private let storageDirectory: URL
-    private static let snapshotPathKey = "mlx.snapshotRelativePath"
+    /// Keyed by repository, so a download of an earlier model is never loaded as this one.
+    private static let snapshotPathKey = "mlx.snapshotRelativePath." + repositoryID
+    private static let legacySnapshotPathKey = "mlx.snapshotRelativePath"
 
     public init() {
         let support = URL.applicationSupportDirectory.appending(path: "Models", directoryHint: .isDirectory)
         storageDirectory = support
         state = .notDownloaded
+        // Qwen3 4B, the model before Gemma: free its 2.3 GB.
+        if UserDefaults.standard.string(forKey: Self.legacySnapshotPathKey) != nil {
+            try? FileManager.default.removeItem(at: storageDirectory)
+            UserDefaults.standard.removeObject(forKey: Self.legacySnapshotPathKey)
+        }
         if localSnapshot != nil { state = .downloaded }
     }
 
@@ -80,7 +90,7 @@ public final class ModelManager {
         loadTask?.cancel()
     }
 
-    /// Frees the ~3 GB the model uses (e.g. when the app moves to the background on iPhone).
+    /// Frees the ~5 GB the model uses (e.g. when the app moves to the background on iPhone).
     public func unload() {
         container = nil
         if state == .ready { state = .downloaded }

@@ -73,7 +73,7 @@ rather than the model's memory. For the full plain-language explanation, see
 
 | Your device | What you get |
 |---|---|
-| iPhone 15 Pro or newer, M-series iPad or Mac | Full written answers from **Qwen3 4B** (a one-time 2.3 GB download in Settings) or Apple Intelligence |
+| iPhone 15 Pro or newer, M-series iPad or Mac | Full written answers from Apple Intelligence or **Gemma 4 E4B** (a one-time 5.2 GB download in Settings) |
 | Other devices with Apple Intelligence | Written answers from Apple Intelligence |
 | Any device running iOS / iPadOS / macOS 26 | Search mode: the most relevant passages with page links |
 
@@ -127,7 +127,7 @@ xcodegen generate
 open AlpineRacingCompanion.xcodeproj
 ```
 
-Set your signing team, then run on **My Mac** or a **real** iPhone/iPad. Qwen3 4B uses MLX,
+Set your signing team, then run on **My Mac** or a **real** iPhone/iPad. Gemma 4 E4B uses MLX,
 which needs a real GPU, so it doesn't run in the iOS Simulator; there the app uses Apple
 Intelligence or search mode.
 

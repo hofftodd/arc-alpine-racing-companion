@@ -61,7 +61,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_STYLE: Automatic
-        # iOS: increased memory limit, needed to run Qwen3 4B on iPhone/iPad.
+        # iOS: increased memory limit, needed to run Gemma 4 E4B on iPhone/iPad.
         "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": App/Config/iOS.entitlements
         "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": App/Config/iOS.entitlements
         # macOS: sandbox with outbound network for the one-time model download, the microphone for dictation, and printing.

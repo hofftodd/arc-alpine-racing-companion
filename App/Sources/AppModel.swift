@@ -75,7 +75,9 @@ final class AppModel {
 
     private var wantsMLX: Bool {
         switch preference {
-        case .automatic: ModelManager.deviceIsCapable
+        // Apple Intelligence answers as well and about four times faster, so Automatic loads the
+        // downloaded model only where Apple Intelligence is unavailable.
+        case .automatic: ModelManager.deviceIsCapable && !FoundationModelsBackend.isAvailable
         case .mlx: true
         case .apple, .searchOnly: false
         }
@@ -93,8 +95,8 @@ final class AppModel {
             if FoundationModelsBackend.isAvailable { return .apple }
             return .searchOnly(reason: FoundationModelsBackend.unavailableReason ?? "Apple Intelligence is unavailable.")
         case .automatic:
-            if modelManager.backend != nil { return .mlx }
             if FoundationModelsBackend.isAvailable { return .apple }
+            if modelManager.backend != nil { return .mlx }
             return .searchOnly(reason: mlxStatusText)
         }
     }
@@ -109,7 +111,7 @@ final class AppModel {
 
     var engineName: String {
         switch engine {
-        case .mlx: "Qwen3 4B · on device"
+        case .mlx: "\(ModelManager.displayName) · on device"
         case .apple: "Apple Intelligence · on device"
         case .searchOnly: "Search only"
         }
@@ -117,7 +119,7 @@ final class AppModel {
 
     private var mlxStatusText: String {
         switch modelManager.state {
-        case .notDownloaded: "Download the Qwen3 4B model in Settings to get written answers."
+        case .notDownloaded: "Download the \(ModelManager.displayName) model in Settings to get written answers."
         case .downloading(let p): "Downloading the model (\(Int(p * 100))%)…"
         case .downloaded, .loading: "Loading the model…"
         case .ready: ""
