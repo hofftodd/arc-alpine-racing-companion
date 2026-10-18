@@ -48,10 +48,12 @@ final class ChatMessage {
     var isUser: Bool
     var text: String
     var createdAt: Date
-    /// Engine that produced the answer, e.g. "Qwen3 4B · on device".
+    /// Engine that produced the answer, e.g. "Gemma 4 E4B · on device".
     var engine: String?
     var citationsData: Data?
     var citedIndexes: [Int] = []
+    /// Quotations in the answer that aren't word for word in its sources.
+    var unverifiedQuotes: [String] = []
     var failed: Bool = false
     var conversation: Conversation?
 

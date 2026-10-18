@@ -278,6 +278,27 @@ private struct MockBackend: LLMBackend {
         #expect(AnswerService.citedIndexes(in: "A [2]. B [1, 3][2] c [x]") == [2, 1, 3])
     }
 
+    @Test func flagsQuotationsNotInTheSources() {
+        let source = "The re-run, even if slower than the first (hindered) run, remains valid. The Referee decides."
+        let answer = """
+            The re-run “remains valid only if it proves slower” [1]. The rule says "The re-run, even if slower \
+            than the first ... run, remains valid" [1]. A “short phrase” and “The Referee decides” are fine.
+            """
+        #expect(QuoteCheck.unverified(in: answer, sources: [source]) == ["remains valid only if it proves slower"])
+        #expect(QuoteCheck.unverified(in: "No quotes here [1].", sources: [source]).isEmpty)
+        #expect(QuoteCheck.unverified(in: #"Mark "DNF" on the Jury Minutes form indicates a "DSQ" [1]."#, sources: [source]).isEmpty)
+    }
+
+    @Test func answerReportsUnverifiedQuotes() async throws {
+        let service = AnswerService(retriever: HybridRetriever(store: try fixtureStore(), semantic: nil))
+        let backend = MockBackend(reply: "The rule says “racers must wear helmets at all times” [1].")
+        var last: AnswerEvent?
+        for try await event in service.answer("Can racers ski through gates during inspection?", backend: backend) {
+            last = event
+        }
+        #expect(last == .finished(cited: [1], unverifiedQuotes: ["racers must wear helmets at all times"]))
+    }
+
     @Test func streamsSourcesTextAndOnlyValidCitations() async throws {
         let service = AnswerService(retriever: HybridRetriever(store: try fixtureStore(), semantic: nil))
         let backend = MockBackend(reply: "Racers may not ski through gates [1]. See also [9].")

@@ -39,6 +39,19 @@ struct MessageView: View {
                         })
                 }
 
+                if !message.unverifiedQuotes.isEmpty, !isStreaming {
+                    Label {
+                        Text(message.unverifiedQuotes.count == 1
+                            ? "This quotation isn't word for word in the sources; check the cited page: “\(message.unverifiedQuotes[0])”"
+                            : "These quotations aren't word for word in the sources; check the cited pages: "
+                                + message.unverifiedQuotes.map { "“\($0)”" }.joined(separator: " "))
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                }
+
                 if !message.citedSources.isEmpty {
                     CitationChips(citations: message.citedSources, open: open)
                 }

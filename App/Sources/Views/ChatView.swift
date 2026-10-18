@@ -171,7 +171,9 @@ struct ChatView: View {
                     switch event {
                     case .sources(let citations): reply.citations = citations
                     case .text(let delta): reply.text += delta
-                    case .finished(let cited): reply.citedIndexes = cited
+                    case .finished(let cited, let unverifiedQuotes):
+                        reply.citedIndexes = cited
+                        reply.unverifiedQuotes = unverifiedQuotes
                     }
                 }
             } catch is CancellationError {

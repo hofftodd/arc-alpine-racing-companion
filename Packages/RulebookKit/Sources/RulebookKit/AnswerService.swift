@@ -16,8 +16,9 @@ public enum AnswerEvent: Sendable, Equatable {
     case sources([Citation])
     /// A piece of the generated answer.
     case text(String)
-    /// Generation finished; `cited` are the source indexes the answer actually referenced.
-    case finished(cited: [Int])
+    /// Generation finished; `cited` are the source indexes the answer actually referenced, and
+    /// `unverifiedQuotes` the quotations that aren't word for word in any excerpt.
+    case finished(cited: [Int], unverifiedQuotes: [String] = [])
 }
 
 /// Retrieval-augmented answering: find relevant rules, have the model answer only
@@ -89,7 +90,9 @@ public final class AnswerService: Sendable {
                         continuation.yield(.text(delta))
                     }
                     let valid = Set(citations.map(\.index))
-                    continuation.yield(.finished(cited: Self.citedIndexes(in: full).filter(valid.contains)))
+                    continuation.yield(.finished(
+                        cited: Self.citedIndexes(in: full).filter(valid.contains),
+                        unverifiedQuotes: QuoteCheck.unverified(in: full, sources: citations.map(\.excerpt))))
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
