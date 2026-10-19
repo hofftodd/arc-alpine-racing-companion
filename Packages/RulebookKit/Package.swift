@@ -11,7 +11,7 @@ let package = Package(
     products: [
         // Retrieval, citations and the Apple Foundation Models backend. No third-party dependencies.
         .library(name: "RulebookKit", targets: ["RulebookKit"]),
-        // On-device open model (Qwen3-4B) via MLX. Kept separate so RulebookKit tests stay fast.
+        // On-device open model (Gemma 4 E4B) via MLX. Kept separate so RulebookKit tests stay fast.
         .library(name: "RulebookMLX", targets: ["RulebookMLX"]),
     ],
     dependencies: [

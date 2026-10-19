@@ -75,7 +75,7 @@ In Xcode:
 
 1. Select the **AlpineRacingCompanion** project → **Signing & Capabilities**. Check that **Team** shows
    your name and *Automatically manage signing* is on. Xcode registers the app ID and the
-   **Increased Memory Limit** capability, which Qwen 4B needs on iPhone and iPad.
+   **Increased Memory Limit** capability, which Gemma 4 E4B needs on iPhone and iPad.
 2. **iPhone and iPad:** set the run destination (top bar) to **Any iOS Device (arm64)**, then
    **Product → Archive**. When the Organizer opens, choose **Distribute App → TestFlight &
    App Store** (called *App Store Connect* in some Xcode versions) and follow the prompts.
@@ -94,8 +94,9 @@ the export-compliance answer (standard HTTPS only), so uploads shouldn't stop to
 2. On each device, install **TestFlight** from the App Store (it's in the Mac App Store too),
    sign in with the same Apple ID, and tap **Install** next to ARC.
 3. First launch on each device: ARC prepares its search index (about a minute; the banner
-   shows progress). Then, in **Settings → Download** (on Wi-Fi), get the 2.3 GB Qwen3 4B model
-   on devices that support it. After that, everything works offline.
+   shows progress). On devices without Apple Intelligence, go to **Settings → Download** (on
+   Wi-Fi) and get the 5.2 GB Gemma 4 E4B model if the device supports it. After that,
+   everything works offline.
 
 ## 5. Invite other officials
 
@@ -113,9 +114,10 @@ the export-compliance answer (standard HTTPS only), so uploads shouldn't stop to
 ### What officials need to know
 
 - **Devices:** iPhone, iPad or Mac running iOS / iPadOS / macOS 26.
-- **Written answers:** Qwen3 4B runs on iPhone 15 Pro or newer and M-series iPads and Macs
-  (a 2.3 GB one-time download in Settings). Other Apple Intelligence devices use Apple's built-in
-  model. Everything else gets search mode, which still shows the matching rules with page links.
+- **Written answers:** devices with Apple Intelligence use Apple's built-in model. On iPhone 15
+  Pro or newer and M-series iPads and Macs without it, Gemma 4 E4B can write the answers instead
+  (a 5.2 GB one-time download in Settings). Everything else gets search mode, which still shows
+  the matching rules with page links.
 - **Offline:** after the first launch (and the optional model download), no signal is needed.
 - **Feedback:** take a screenshot in TestFlight to send it straight to you.
 
