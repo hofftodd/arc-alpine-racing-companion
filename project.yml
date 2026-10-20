@@ -10,7 +10,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"  # scripts/bump_build.sh before each TestFlight upload
+    CURRENT_PROJECT_VERSION: "2"  # scripts/bump_build.sh before each TestFlight upload
 configFiles:
   # DEVELOPMENT_TEAM comes from App/Config/Local.xcconfig (git-ignored); see DISTRIBUTION.md.
   Debug: App/Config/Signing.xcconfig
